@@ -209,19 +209,19 @@ namespace NHibernate.Id.Enhanced
 		{
 			IdentifierType = type;
 
-			TableName = determineGeneratorTableName(parms, dialect);
-			SegmentColumnName = determineSegmentColumnName(parms, dialect);
-			ValueColumnName = determineValueColumnName(parms, dialect);
+			TableName = DetermineGeneratorTableName(parms, dialect);
+			SegmentColumnName = DetermineSegmentColumnName(parms, dialect);
+			ValueColumnName = DetermineValueColumnName(parms, dialect);
 
-			SegmentValue = determineSegmentValue(parms);
+			SegmentValue = DetermineSegmentValue(parms);
 
-			SegmentValueLength = determineSegmentColumnSize(parms);
-			InitialValue = determineInitialValue(parms);
-			IncrementSize = determineIncrementSize(parms);
+			SegmentValueLength = DetermineSegmentColumnSize(parms);
+			InitialValue = DetermineInitialValue(parms);
+			IncrementSize = DetermineIncrementSize(parms);
 
-			buildSelectQuery(dialect);
-			buildUpdateQuery();
-			buildInsertQuery();
+			BuildSelectQuery(dialect);
+			BuildUpdateQuery();
+			BuildInsertQuery();
 
 			
 			// if the increment size is greater than one, we prefer pooled optimization; but we
@@ -243,17 +243,11 @@ namespace NHibernate.Id.Enhanced
 		#endregion
 
 
-		/**
-         * Determine the table name to use for the generator values.
-         * <p/>
-         * Called during {@link #configure configuration}.
-         *
-         * @see #getTableName()
-         * @param params The params supplied in the generator config (plus some standard useful extras).
-         * @param dialect The dialect in effect
-         * @return The table name to use.
-         */
-		protected string determineGeneratorTableName(IDictionary<string, string> parms, Dialect.Dialect dialect)
+		/// <summary>
+		///  Determine the table name to use for the generator values. Called during configuration.
+		/// </summary>
+		/// <param name="parms">The parameters supplied in the generator config (plus some standard useful extras).</param>
+		protected string DetermineGeneratorTableName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
 			string name = PropertiesHelper.GetString(TableParam, parms, DefaultTable);
 			bool isGivenNameUnqualified = name.IndexOf('.') < 0;
@@ -279,18 +273,13 @@ namespace NHibernate.Id.Enhanced
 			return name;
 		}
 
-		/**
-		 * Determine the name of the column used to indicate the segment for each
-		 * row.  This column acts as the primary key.
-		 * <p/>
-		 * Called during {@link #configure configuration}.
-		 *
-		 * @see #getSegmentColumnName()
-		 * @param params The params supplied in the generator config (plus some standard useful extras).
-		 * @param dialect The dialect in effect
-		 * @return The name of the segment column
-		 */
-		protected string determineSegmentColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
+		/// <summary>
+		/// Determine the name of the column used to indicate the segment for each
+		/// row.  This column acts as the primary key.
+		/// Called during configuration.
+		/// </summary>
+		/// <param name="parms">The parameters supplied in the generator config (plus some standard useful extras).</param>
+		protected string DetermineSegmentColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
 			//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
 			string name = PropertiesHelper.GetString(SegmentColumnParam, parms, DefaultSegmentColumn);
@@ -298,17 +287,12 @@ namespace NHibernate.Id.Enhanced
 			//return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 		}
 
-		/**
-		 * Determine the name of the column in which we will store the generator persistent value.
-		 * <p/>
-		 * Called during {@link #configure configuration}.
-		 *
-		 * @see #getValueColumnName()
-		 * @param params The params supplied in the generator config (plus some standard useful extras).
-		 * @param dialect The dialect in effect
-		 * @return The name of the value column
-		 */
-		protected string determineValueColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
+		
+		/// <summary>
+		/// Determine the name of the column in which we will store the generator persistent value.
+		/// Called during configuration.
+		/// </summary>
+		protected string DetermineValueColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
 			//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
 			string name = PropertiesHelper.GetString(ValueColumnParam, parms, DefaultValueColumn);
@@ -316,20 +300,15 @@ namespace NHibernate.Id.Enhanced
 			return name;
 		}
 
-		/**
-		 * Determine the segment value corresponding to this generator instance.
-		 * <p/>
-		 * Called during {@link #configure configuration}.
-		 *
-		 * @see #getSegmentValue()
-		 * @param params The params supplied in the generator config (plus some standard useful extras).
-		 * @return The name of the value column
-		 */
-		protected string determineSegmentValue(IDictionary<string, string> parms)
+	
+		/// <summary>
+		/// Determine the segment value corresponding to this generator instance. Called during configuration.
+		/// </summary>
+		protected string DetermineSegmentValue(IDictionary<string, string> parms)
 		{
 			string segmentValue = PropertiesHelper.GetString(SegmentValueParam, parms, "");
 			if (string.IsNullOrEmpty(segmentValue))
-				segmentValue = determineDefaultSegmentValue(parms);
+				segmentValue = DetermineDefaultSegmentValue(parms);
 			return segmentValue;
 
 			//string segmentValue = params.getProperty( SEGMENT_VALUE_PARAM );
@@ -339,14 +318,12 @@ namespace NHibernate.Id.Enhanced
 			//return segmentValue;
 		}
 
-		/**
-		 * Used in the cases where {@link #determineSegmentValue} is unable to
-		 * determine the value to use.
-		 *
-		 * @param params The params supplied in the generator config (plus some standard useful extras).
-		 * @return The default segment value to use.
-		 */
-		protected string determineDefaultSegmentValue(IDictionary<string, string> parms)
+		
+		/// <summary>
+		/// Used in the cases where <see cref="DetermineSegmentValue"/> is unable to
+		/// determine the value to use.
+		/// </summary>
+		protected string DetermineDefaultSegmentValue(IDictionary<string, string> parms)
 		{
 			bool preferSegmentPerEntity = PropertiesHelper.GetBoolean(ConfigPreferSegmentPerEntity, parms, false);
 			string defaultToUse = preferSegmentPerEntity ? parms[PersistentIdGeneratorParmsNames.Table] : DefaultSegmentValue;
@@ -355,31 +332,30 @@ namespace NHibernate.Id.Enhanced
 			return defaultToUse;
 		}
 
-		/**
-		 * Determine the size of the {@link #getSegmentColumnName segment column}
-		 * <p/>
-		 * Called during {@link #configure configuration}.
-		 *
-		 * @see #getSegmentValueLength()
-		 * @param params The params supplied in the generator config (plus some standard useful extras).
-		 * @return The size of the segment column
-		 */
-		protected int determineSegmentColumnSize(IDictionary<string, string> parms)
+		
+		/// <summary>
+		/// Determine the size of the <see cref="SegmentColumnName"/> segment column.
+		///  Called during configuration.
+		/// </summary>
+		protected int DetermineSegmentColumnSize(IDictionary<string, string> parms)
 		{
 			return PropertiesHelper.GetInt32(SegmentLengthParam, parms, DefaultSegmentLength);
 		}
 
-		protected int determineInitialValue(IDictionary<string, string> parms)
+
+		protected int DetermineInitialValue(IDictionary<string, string> parms)
 		{
 			return PropertiesHelper.GetInt32(InitialParam, parms, DefaltInitialValue);
 		}
 
-		protected int determineIncrementSize(IDictionary<string, string> parms)
+
+		protected int DetermineIncrementSize(IDictionary<string, string> parms)
 		{
 			return PropertiesHelper.GetInt32(IncrementParam, parms, DefaultIncrementSize);
 		}
 
-		protected void buildSelectQuery(Dialect.Dialect dialect)
+
+		protected void BuildSelectQuery(Dialect.Dialect dialect)
 		{
 			const string alias = "tbl";
 			SqlStringBuilder selectBuilder = new SqlStringBuilder(100);
@@ -401,7 +377,7 @@ namespace NHibernate.Id.Enhanced
 			selectParameterTypes = new[] { SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength) };
 		}
 
-		protected void buildUpdateQuery()
+		protected void BuildUpdateQuery()
 		{
 			SqlStringBuilder builder = new SqlStringBuilder(100);
 			builder.Add("update " + TableName)
@@ -415,7 +391,7 @@ namespace NHibernate.Id.Enhanced
 			updateParameterTypes = new[] { SqlTypes.SqlTypeFactory.Int64, SqlTypes.SqlTypeFactory.Int64, SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength) };
 		}
 
-		protected void buildInsertQuery()
+		protected void BuildInsertQuery()
 		{
 			SqlStringBuilder builder = new SqlStringBuilder(100);
 			builder.Add("insert into ").Add(TableName).Add(" (" + SegmentColumnName + ", " + ValueColumnName + ") values (").AddParameter()
