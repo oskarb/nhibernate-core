@@ -335,7 +335,7 @@ namespace NHibernate.Id.Enhanced
 		
 		/// <summary>
 		/// Determine the size of the <see cref="SegmentColumnName"/> segment column.
-		///  Called during configuration.
+		/// Called during configuration.
 		/// </summary>
 		protected int DetermineSegmentColumnSize(IDictionary<string, string> parms)
 		{
@@ -362,20 +362,19 @@ namespace NHibernate.Id.Enhanced
 			selectBuilder.Add("select ").Add(StringHelper.Qualify(alias, ValueColumnName))
 				.Add(" from " + TableName + " " + alias + " where ")
 				.Add(StringHelper.Qualify(alias, SegmentColumnName) + " = ")
-				.Add(Parameter.Placeholder).Add("  ");
-			//string query = "select " + StringHelper.Qualify( alias, ValueColumnName ) +
-			//        " from " + TableName + ' ' + alias +
-			//        " where " + StringHelper.Qualify( alias, SegmentColumnName ) + "=?";
+				.AddParameter().Add("  ");
+
 			Dictionary<string, LockMode> lockOptions = new Dictionary<string, LockMode>();
-			//LockOptions lockOptions = new LockOptions( LockMode.PESSIMISTIC_WRITE );
 			lockOptions[alias] = LockMode.Upgrade;
-			//lockOptions.setAliasSpecificLockMode( alias, LockMode.PESSIMISTIC_WRITE );
-			Dictionary<string, string[]> updateTargetColumnsMap = new Dictionary<string, string[]> { { alias, new[] { ValueColumnName } } };
-			//Map updateTargetColumnsMap = Collections.singletonMap( alias, new string[] { valueColumnName } );
+
+			Dictionary<string, string[]> updateTargetColumnsMap = new Dictionary<string, string[]>();
+			updateTargetColumnsMap[alias] = new[] { ValueColumnName };
+
 			selectQuery = dialect.ApplyLocksToSql(selectBuilder.ToSqlString(), lockOptions, updateTargetColumnsMap);
 
 			selectParameterTypes = new[] { SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength) };
 		}
+
 
 		protected void BuildUpdateQuery()
 		{
@@ -384,22 +383,31 @@ namespace NHibernate.Id.Enhanced
 				.Add(" set ").Add(ValueColumnName).Add(" = ").AddParameter()
 				.Add(" where ").Add(ValueColumnName).Add(" = ").AddParameter()
 				.Add(" and ").Add(SegmentColumnName).Add(" = ").AddParameter();
-			//return "update " + TableName +
-			//        " set " + ValueColumnName + "=? " +
-			//        " where " + ValueColumnName + "=? and " + SegmentColumnName + "=?";
+			
 			updateQuery = builder.ToSqlString();
-			updateParameterTypes = new[] { SqlTypes.SqlTypeFactory.Int64, SqlTypes.SqlTypeFactory.Int64, SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength) };
+			updateParameterTypes = new[]
+			{
+				SqlTypes.SqlTypeFactory.Int64,
+				SqlTypes.SqlTypeFactory.Int64,
+				SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength)
+			};
 		}
+
 
 		protected void BuildInsertQuery()
 		{
 			SqlStringBuilder builder = new SqlStringBuilder(100);
-			builder.Add("insert into ").Add(TableName).Add(" (" + SegmentColumnName + ", " + ValueColumnName + ") values (").AddParameter()
-				.Add(", ").AddParameter().Add(")");
-			//return "insert into " + TableName + " (" + SegmentColumnName + ", " + ValueColumnName + ") " + " values (?,?)";
+			builder.Add("insert into " + TableName)
+				.Add(" (" + SegmentColumnName + ", " + ValueColumnName + ") ")
+				.Add(" values (").AddParameter().Add(", ").AddParameter().Add(")");
+			
 			insertQuery = builder.ToSqlString();
-			insertParameterTypes = new[] { SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength), SqlTypes.SqlTypeFactory.Int64 };
+			insertParameterTypes = new[] {
+				SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength),
+				SqlTypes.SqlTypeFactory.Int64
+			};
 		}
+
 
 		//@Override
 		[MethodImpl(MethodImplOptions.Synchronized)]
@@ -572,45 +580,20 @@ namespace NHibernate.Id.Enhanced
 
 		public virtual string[] SqlCreateStrings(Dialect.Dialect dialect)
 		{
-			return new string[] {dialect.CreateTableString + " " + TableName         + " ("
-            +SegmentColumnName+" "+dialect.GetTypeName(SqlTypes.SqlTypeFactory.GetAnsiString( SegmentValueLength)) + " not null, "
-            + ValueColumnName+" "+dialect.GetTypeName(SqlTypes.SqlTypeFactory.Int64)+", "
-            +dialect.PrimaryKeyString+" ( "+SegmentColumnName+") "
-            +")"};
-			//        new StringBuffer()
-			//                .append( dialect.getCreateTableString() )
-			//                .append( ' ' )
-			//                .append( tableName )
-			//                .append( " ( " )
-			//                .append( segmentColumnName )
-			//                .append( ' ' )
-			//                .append( dialect.getTypeName( Types.VARCHAR, segmentValueLength, 0, 0 ) )
-			//                .append( " not null " )
-			//                .append( ",  " )
-			//                .append( valueColumnName )
-			//                .append( ' ' )
-			//                .append( dialect.getTypeName( Types.BIGINT ) )
-			//                .append( ", primary key ( " )
-			//                .append( segmentColumnName )
-			//                .append( " ) ) " )
-			//                .toString()
-			//};
+			string createString = dialect.CreateTableString + " " + TableName
+				+ " ( "
+				+ SegmentColumnName + " " + dialect.GetTypeName(SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength)) + " not null, "
+				+ ValueColumnName + " " + dialect.GetTypeName(SqlTypes.SqlTypeFactory.Int64) + ", "
+				+ dialect.PrimaryKeyString + " ( " + SegmentColumnName + ") "
+				+ ")";
+
+			return new string[] { createString };
 		}
 
 
 		public virtual string[] SqlDropString(Dialect.Dialect dialect)
 		{
 			return new[] { dialect.GetDropTableString(TableName) };
-
-			//StringBuffer sqlDropString = new StringBuffer().append( "drop table " );
-			//if ( dialect.supportsIfExistsBeforeTableName() ) {
-			//    sqlDropString.append( "if exists " );
-			//}
-			//sqlDropString.append( tableName ).append( dialect.getCascadeConstraintsString() );
-			//if ( dialect.supportsIfExistsAfterTableName() ) {
-			//    sqlDropString.append( " if exists" );
-			//}
-			//return new string[] { sqlDropString.toString() };
 		}
 	}
 }
