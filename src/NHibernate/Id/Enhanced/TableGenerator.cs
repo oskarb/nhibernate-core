@@ -445,129 +445,79 @@ namespace NHibernate.Id.Enhanced
 
 		public override object DoWorkInCurrentTransaction(ISessionImplementor session, System.Data.IDbConnection conn, System.Data.IDbTransaction transaction)
 		{
-			//new AccessCallback() {
-			//    @Override
-			//    public IntegralDataTypeHolder getNextValue() {
-			//return session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork(
-			//        new AbstractReturningWork<IntegralDataTypeHolder>() {
-			//@Override
-			//public IntegralDataTypeHolder execute(Connection connection) throws SQLException {
-			//IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
 			long result;
-			int rows;
+			int updatedRows;
+
 			do
 			{
-				//statementLogger.logStatement( selectQuery, FormatStyle.BASIC.getFormatter() );
+				object selectedValue;
 
-				//PreparedStatement selectPS = conn.prepareStatement( selectQuery );
-				//try {
-				//    selectPS.setString( 1, segmentValue );
-				//    ResultSet selectRS = selectPS.executeQuery();
-				//SqlTypes.SqlType[] selectParameterTypes = { SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength) };
-
-				IDbCommand cmd = session.Factory.ConnectionProvider.Driver.GenerateCommand(CommandType.Text, selectQuery, selectParameterTypes);
-				using (cmd)
+				try
 				{
-					cmd.Connection = conn;
-					cmd.Transaction = transaction;
-					//cmd.CommandText = selectQuery;
-					//var dbParam = cmd.CreateParameter();
-					//dbParam.Value = SegmentValue;
-					//cmd.Parameters.Add(dbParam);
-					string s = cmd.CommandText;
-					((IDataParameter)cmd.Parameters[0]).Value = SegmentValue;
-					PersistentIdGeneratorParmsNames.SqlStatementLogger.LogCommand(cmd, FormatStyle.Basic);
-
-					object objVal = cmd.ExecuteScalar();
-					//if ( !selectRS.next() ) {
-					if (objVal == null)
+					IDbCommand selectCmd = session.Factory.ConnectionProvider.Driver.GenerateCommand(CommandType.Text, selectQuery, selectParameterTypes);
+					using (selectCmd)
 					{
-						//value.initialize( initialValue );
+						selectCmd.Connection = conn;
+						selectCmd.Transaction = transaction;
+						string s = selectCmd.CommandText;
+						((IDataParameter)selectCmd.Parameters[0]).Value = SegmentValue;
+						PersistentIdGeneratorParmsNames.SqlStatementLogger.LogCommand(selectCmd, FormatStyle.Basic);
+
+						selectedValue = selectCmd.ExecuteScalar();
+					}
+
+					if (selectedValue == null)
+					{
 						result = InitialValue;
+
 						IDbCommand insertCmd = session.Factory.ConnectionProvider.Driver.GenerateCommand(CommandType.Text, insertQuery, insertParameterTypes);
 						using (insertCmd)
 						{
 							insertCmd.Connection = conn;
 							insertCmd.Transaction = transaction;
-							//insertCmd.CommandText = insertQuery;
-							//var param1 = insertCmd.CreateParameter();
-							//param1.Value = SegmentValue;
-							//var param2 = insertCmd.CreateParameter();
-							//param2.Value = result;
+
 							((IDataParameter)insertCmd.Parameters[0]).Value = SegmentValue;
 							((IDataParameter)insertCmd.Parameters[1]).Value = result;
 
 							PersistentIdGeneratorParmsNames.SqlStatementLogger.LogCommand(insertCmd, FormatStyle.Basic);
 							insertCmd.ExecuteNonQuery();
 						}
-						//PreparedStatement insertPS = null;
-						//try {
-						//    statementLogger.logStatement( insertQuery, FormatStyle.BASIC.getFormatter() );
-						//    insertPS = connection.prepareStatement( insertQuery );
-						//    insertPS.setString( 1, segmentValue );
-						//    value.bind( insertPS, 2 );
-						//    insertPS.execute();
-						//}
-						//finally {
-						//    if ( insertPS != null ) {
-						//        insertPS.close();
-						//    }
-						//}
 					}
 					else
 					{
-						result = Convert.ToInt64(objVal);
-						//value.initialize( selectRS, 1 );
+						result = Convert.ToInt64(selectedValue);
 					}
-					//selectRS.close();
 				}
-				//catch ( SQLException e ) {
-				//    LOG.unableToReadOrInitHiValue(e);
-				//    throw e;
-				//}
-				//finally {
-				//    selectPS.close();
-				//}
-
-				IDbCommand updateCmd = session.Factory.ConnectionProvider.Driver.GenerateCommand(CommandType.Text, updateQuery, updateParameterTypes);
-				using (updateCmd)
+				catch (Exception ex)
 				{
-					updateCmd.Connection = conn;
-					updateCmd.Transaction = transaction;
-					//updateCmd.CommandText = updateQuery;
-
-					int increment = Optimizer.ApplyIncrementSizeToSourceValues ? IncrementSize : 1;
-					((IDataParameter)updateCmd.Parameters[0]).Value = result + increment;
-					((IDataParameter)updateCmd.Parameters[1]).Value = result;
-					((IDataParameter)updateCmd.Parameters[2]).Value = SegmentValue;
-					PersistentIdGeneratorParmsNames.SqlStatementLogger.LogCommand(updateCmd, FormatStyle.Basic);
-					rows = updateCmd.ExecuteNonQuery();
+					log.Error("Unable to read or initialize hi value in " + TableName, ex);
+					throw;
 				}
 
-				//statementLogger.logStatement( updateQuery, FormatStyle.BASIC.getFormatter() );
-				//PreparedStatement updatePS = connection.prepareStatement( updateQuery );
-				//try {
-				//    final IntegralDataTypeHolder updateValue = value.copy();
-				//    if ( optimizer.applyIncrementSizeToSourceValues() ) {
-				//        updateValue.add( incrementSize );
-				//    }
-				//    else {
-				//        updateValue.increment();
-				//    }
-				//    updateValue.bind( updatePS, 1 );
-				//    value.bind( updatePS, 2 );
-				//    updatePS.setString( 3, segmentValue );
-				//    rows = updatePS.executeUpdate();
-				//}
-				//catch ( SQLException e ) {
-				//    LOG.unableToUpdateQueryHiValue(tableName, e);
-				//    throw e;
-				//}
-				//finally {
-				//    updatePS.close();
-				//}
+
+				try
+				{
+					IDbCommand updateCmd = session.Factory.ConnectionProvider.Driver.GenerateCommand(CommandType.Text, updateQuery, updateParameterTypes);
+					using (updateCmd)
+					{
+						updateCmd.Connection = conn;
+						updateCmd.Transaction = transaction;
+
+						int increment = Optimizer.ApplyIncrementSizeToSourceValues ? IncrementSize : 1;
+						((IDataParameter)updateCmd.Parameters[0]).Value = result + increment;
+						((IDataParameter)updateCmd.Parameters[1]).Value = result;
+						((IDataParameter)updateCmd.Parameters[2]).Value = SegmentValue;
+						PersistentIdGeneratorParmsNames.SqlStatementLogger.LogCommand(updateCmd, FormatStyle.Basic);
+						updatedRows = updateCmd.ExecuteNonQuery();
+					}
+				}
+				catch (Exception ex)
+				{
+					log.Error("Unable to update hi value in " + TableName, ex);
+					throw;
+				}
 			}
-			while (rows == 0);
+			while (updatedRows == 0);
 
 			TableAccessCount++;
 
