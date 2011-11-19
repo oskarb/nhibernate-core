@@ -30,8 +30,8 @@ namespace NHibernate.Id.Enhanced
 	 * of an optimizer.
 	 * <p/>
 	 * <b>NOTE</b> that by default we use a single row for all generators (based
-	 * on {@link #DEF_SEGMENT_VALUE}).  The configuration parameter
-	 * {@link #CONFIG_PREFER_SEGMENT_PER_ENTITY} can be used to change that to
+	 * on {@link #DefaultSegmentValue}).  The configuration parameter
+	 * {@link #ConfigPreferSegmentPerEntity} can be used to change that to
 	 * instead default to using a row for each entity name.
 	 * <p/>
 	 * Configuration parameters:
@@ -42,42 +42,42 @@ namespace NHibernate.Id.Enhanced
 	 *     <td><b>DESCRIPTION</b></td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #TABLE_PARAM}</td>
-	 *     <td>{@link #DEF_TABLE}</td>
+	 *     <td>{@link #TableParam}</td>
+	 *     <td>{@link #DefaultTable}</td>
 	 *     <td>The name of the table to use to store/retrieve values</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #VALUE_COLUMN_PARAM}</td>
-	 *     <td>{@link #DEF_VALUE_COLUMN}</td>
+	 *     <td>{@link #ValueColumnParam}</td>
+	 *     <td>{@link #DefaultValueColumn}</td>
 	 *     <td>The name of column which holds the sequence value for the given segment</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #SEGMENT_COLUMN_PARAM}</td>
-	 *     <td>{@link #DEF_SEGMENT_COLUMN}</td>
+	 *     <td>{@link #SegmentColumnParam}</td>
+	 *     <td>{@link #DefaultSegmentColumn}</td>
 	 *     <td>The name of the column which holds the segment key</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #SEGMENT_VALUE_PARAM}</td>
-	 *     <td>{@link #DEF_SEGMENT_VALUE}</td>
+	 *     <td>{@link #SegmentValueParam}</td>
+	 *     <td>{@link #DefaultSegmentValue}</td>
 	 *     <td>The value indicating which segment is used by this generator; refers to values in the {@link #SEGMENT_COLUMN_PARAM} column</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #SEGMENT_LENGTH_PARAM}</td>
-	 *     <td>{@link #DEF_SEGMENT_LENGTH}</td>
+	 *     <td>{@link #SegmentLengthParam}</td>
+	 *     <td>{@link #DefaultSegmentLength}</td>
 	 *     <td>The data length of the {@link #SEGMENT_COLUMN_PARAM} column; used for schema creation</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #INITIAL_PARAM}</td>
-	 *     <td>{@link #DEFAULT_INITIAL_VALUE}</td>
+	 *     <td>{@link #InitialParam}</td>
+	 *     <td>{@link #DefaltInitialValue}</td>
 	 *     <td>The initial value to be stored for the given segment</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #INCREMENT_PARAM}</td>
-	 *     <td>{@link #DEFAULT_INCREMENT_SIZE}</td>
+	 *     <td>{@link #IncrementParam}</td>
+	 *     <td>{@link #DefaultIncrementSize}</td>
 	 *     <td>The increment size for the underlying segment; see the discussion on {@link Optimizer} for more details.</td>
 	 *   </tr>
 	 *   <tr>
-	 *     <td>{@link #OPT_PARAM}</td>
+	 *     <td>{@link #OptimizerParam}</td>
 	 *     <td><i>depends on defined increment size</i></td>
 	 *     <td>Allows explicit definition of which optimization strategy to use</td>
 	 *   </tr>
@@ -89,30 +89,31 @@ namespace NHibernate.Id.Enhanced
 	{
 		private static readonly IInternalLogger log = LoggerProvider.LoggerFor(typeof(SequenceStyleGenerator));
 
-		public const string CONFIG_PREFER_SEGMENT_PER_ENTITY = "prefer_entity_table_as_segment_value";
 
-		public const string TABLE_PARAM = "table_name";
-		public const string DEF_TABLE = "hibernate_sequences";
+		public const string ConfigPreferSegmentPerEntity = "prefer_entity_table_as_segment_value";
 
-		public const string VALUE_COLUMN_PARAM = "value_column_name";
-		public const string DEF_VALUE_COLUMN = "next_val";
+		public const string TableParam = "table_name";
+		public const string DefaultTable = "hibernate_sequences";
 
-		public const string SEGMENT_COLUMN_PARAM = "segment_column_name";
-		public const string DEF_SEGMENT_COLUMN = "sequence_name";
+		public const string ValueColumnParam = "value_column_name";
+		public const string DefaultValueColumn = "next_val";
 
-		public const string SEGMENT_VALUE_PARAM = "segment_value";
-		public const string DEF_SEGMENT_VALUE = "default";
+		public const string SegmentColumnParam = "segment_column_name";
+		public const string DefaultSegmentColumn = "sequence_name";
 
-		public const string SEGMENT_LENGTH_PARAM = "segment_value_length";
-		public const int DEF_SEGMENT_LENGTH = 255;
+		public const string SegmentValueParam = "segment_value";
+		public const string DefaultSegmentValue = "default";
 
-		public const string INITIAL_PARAM = "initial_value";
-		public const int DEFAULT_INITIAL_VALUE = 1;
+		public const string SegmentLengthParam = "segment_value_length";
+		public const int DefaultSegmentLength = 255;
 
-		public const string INCREMENT_PARAM = "increment_size";
-		public const int DEFAULT_INCREMENT_SIZE = 1;
+		public const string InitialParam = "initial_value";
+		public const int DefaltInitialValue = 1;
 
-		public const string OPT_PARAM = "optimizer";
+		public const string IncrementParam = "increment_size";
+		public const int DefaultIncrementSize = 1;
+
+		public const string OptimizerParam = "optimizer";
 
 
 		public IType IdentifierType { get; private set; }
@@ -282,12 +283,12 @@ namespace NHibernate.Id.Enhanced
 			//        ? OptimizerFactory.Pool
 			//        : OptimizerFactory.PoolLo;
 			string defaultOptimizerStrategy = IncrementSize <= 1 ? OptimizerFactory.None : defaultPooledOptimizerStrategy;
-			string optimizationStrategy = PropertiesHelper.GetString(OPT_PARAM, parms, defaultOptimizerStrategy);
+			string optimizationStrategy = PropertiesHelper.GetString(OptimizerParam, parms, defaultOptimizerStrategy);
 			Optimizer = OptimizerFactory.BuildOptimizer(
 					optimizationStrategy,
 					IdentifierType.ReturnedClass,
 					IncrementSize,
-					PropertiesHelper.GetInt32(INITIAL_PARAM, parms, -1)  // Use -1 as default initial value here to signal that it's not set.
+					PropertiesHelper.GetInt32(InitialParam, parms, -1)  // Use -1 as default initial value here to signal that it's not set.
 				);
 		}
 
@@ -306,7 +307,7 @@ namespace NHibernate.Id.Enhanced
          */
 		protected string determineGeneratorTableName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
-			string name = PropertiesHelper.GetString(TABLE_PARAM, parms, DEF_TABLE);
+			string name = PropertiesHelper.GetString(TableParam, parms, DefaultTable);
 			bool isGivenNameUnqualified = name.IndexOf('.') < 0;
 			if (isGivenNameUnqualified)
 			{
@@ -344,7 +345,7 @@ namespace NHibernate.Id.Enhanced
 		protected string determineSegmentColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
 			//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
-			string name = PropertiesHelper.GetString(SEGMENT_COLUMN_PARAM, parms, DEF_SEGMENT_COLUMN);
+			string name = PropertiesHelper.GetString(SegmentColumnParam, parms, DefaultSegmentColumn);
 			return name;
 			//return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 		}
@@ -362,7 +363,7 @@ namespace NHibernate.Id.Enhanced
 		protected string determineValueColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
 			//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
-			string name = PropertiesHelper.GetString(VALUE_COLUMN_PARAM, parms, DEF_VALUE_COLUMN);
+			string name = PropertiesHelper.GetString(ValueColumnParam, parms, DefaultValueColumn);
 			//return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 			return name;
 		}
@@ -378,7 +379,7 @@ namespace NHibernate.Id.Enhanced
 		 */
 		protected string determineSegmentValue(IDictionary<string, string> parms)
 		{
-			string segmentValue = PropertiesHelper.GetString(SEGMENT_VALUE_PARAM, parms, "");
+			string segmentValue = PropertiesHelper.GetString(SegmentValueParam, parms, "");
 			if (string.IsNullOrEmpty(segmentValue))
 				segmentValue = determineDefaultSegmentValue(parms);
 			return segmentValue;
@@ -399,8 +400,8 @@ namespace NHibernate.Id.Enhanced
 		 */
 		protected string determineDefaultSegmentValue(IDictionary<string, string> parms)
 		{
-			bool preferSegmentPerEntity = PropertiesHelper.GetBoolean(CONFIG_PREFER_SEGMENT_PER_ENTITY, parms, false);
-			string defaultToUse = preferSegmentPerEntity ? parms[PersistentIdGeneratorParmsNames.Table] : DEF_SEGMENT_VALUE;
+			bool preferSegmentPerEntity = PropertiesHelper.GetBoolean(ConfigPreferSegmentPerEntity, parms, false);
+			string defaultToUse = preferSegmentPerEntity ? parms[PersistentIdGeneratorParmsNames.Table] : DefaultSegmentValue;
 
 			//LOG.usingDefaultIdGeneratorSegmentValue(tableName, segmentColumnName, defaultToUse);
 			return defaultToUse;
@@ -417,17 +418,17 @@ namespace NHibernate.Id.Enhanced
 		 */
 		protected int determineSegmentColumnSize(IDictionary<string, string> parms)
 		{
-			return PropertiesHelper.GetInt32(SEGMENT_LENGTH_PARAM, parms, DEF_SEGMENT_LENGTH);
+			return PropertiesHelper.GetInt32(SegmentLengthParam, parms, DefaultSegmentLength);
 		}
 
 		protected int determineInitialValue(IDictionary<string, string> parms)
 		{
-			return PropertiesHelper.GetInt32(INITIAL_PARAM, parms, DEFAULT_INITIAL_VALUE);
+			return PropertiesHelper.GetInt32(InitialParam, parms, DefaltInitialValue);
 		}
 
 		protected int determineIncrementSize(IDictionary<string, string> parms)
 		{
-			return PropertiesHelper.GetInt32(INCREMENT_PARAM, parms, DEFAULT_INCREMENT_SIZE);
+			return PropertiesHelper.GetInt32(IncrementParam, parms, DefaultIncrementSize);
 		}
 
 		protected void buildSelectQuery(Dialect.Dialect dialect)
