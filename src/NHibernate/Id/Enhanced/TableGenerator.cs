@@ -223,13 +223,13 @@ namespace NHibernate.Id.Enhanced
 			buildUpdateQuery();
 			buildInsertQuery();
 
-
+			
 			// if the increment size is greater than one, we prefer pooled optimization; but we
 			// need to see if the user prefers POOL or POOL_LO...
-			string defaultPooledOptimizerStrategy = OptimizerFactory.Pool;
-			//string defaultPooledOptimizerStrategy = PropertiesHelper.GetBoolean( Environment.PREFER_POOLED_VALUES_LO, parms, false )
-			//        ? OptimizerFactory.Pool
-			//        : OptimizerFactory.PoolLo;
+			string defaultPooledOptimizerStrategy = PropertiesHelper.GetBoolean(Cfg.Environment.PreferPooledValuesLo, parms, false)
+				? OptimizerFactory.PoolLo
+				: OptimizerFactory.Pool;
+
 			string defaultOptimizerStrategy = IncrementSize <= 1 ? OptimizerFactory.None : defaultPooledOptimizerStrategy;
 			string optimizationStrategy = PropertiesHelper.GetString(OptimizerParam, parms, defaultOptimizerStrategy);
 			Optimizer = OptimizerFactory.BuildOptimizer(

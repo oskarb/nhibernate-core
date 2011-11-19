@@ -103,8 +103,15 @@ namespace NHibernate.Id.Enhanced
 
 			string valueColumnName = PropertiesHelper.GetString(ValueColumnParam, parms, DefaultValueColumnName);
 
-			string defOptStrategy = incrementSize <= 1 ? OptimizerFactory.None : OptimizerFactory.Pool;
-			string optimizationStrategy = PropertiesHelper.GetString(OptimizerParam, parms, defOptStrategy);
+
+			// if the increment size is greater than one, we prefer pooled optimization; but we
+			// need to see if the user prefers POOL or POOL_LO...
+			string defaultPooledOptimizerStrategy = PropertiesHelper.GetBoolean(Cfg.Environment.PreferPooledValuesLo, parms, false)
+				? OptimizerFactory.PoolLo
+				: OptimizerFactory.Pool;
+			string defaultOptimizerStrategy = incrementSize <= 1 ? OptimizerFactory.None : defaultPooledOptimizerStrategy;
+			string optimizationStrategy = PropertiesHelper.GetString(OptimizerParam, parms, defaultPooledOptimizerStrategy);
+
 			if (OptimizerFactory.None.Equals(optimizationStrategy) && incrementSize > 1)
 			{
 				log.Warn("config specified explicit optimizer of [" + OptimizerFactory.None + "], but [" + IncrementParam + "=" + incrementSize + "; honoring optimizer setting");
