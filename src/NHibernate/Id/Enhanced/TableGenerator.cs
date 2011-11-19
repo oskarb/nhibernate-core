@@ -116,25 +116,76 @@ namespace NHibernate.Id.Enhanced
 		public const string OptimizerParam = "optimizer";
 
 
+		/// <summary>
+		/// Type mapping for the identifier.
+		/// </summary>
 		public IType IdentifierType { get; private set; }
-		//private IType identifierType;
 
+
+		/// <summary>
+		/// The name of the table in which we store this generator's persistent state.
+		/// </summary>
 		public string TableName { get; private set; }
-		//private string tableName;
 
+
+		/// <summary>
+		/// The name of the column in which we store the segment to which each row
+		/// belongs. The value here acts as primary key.
+		/// </summary>
 		public string SegmentColumnName { get; private set; }
-		//private string segmentColumnName;
-		public string SegmentValue { get; private set; }
-		public int SegmentValueLength { get; private set; }
-		//private string segmentValue;
-		//private int segmentValueLength;
 
+
+		/// <summary>
+		/// The value in the column identified by <see cref="SegmentColumnName"/> which
+		/// corresponds to this generator instance.  In other words, this value
+		/// indicates the row in which this generator instance will store values.
+		/// </summary>
+		public string SegmentValue { get; private set; }
+
+
+		/// <summary>
+		/// The size of the column identified by <see cref="SegmentColumnName"/>
+		/// in the underlying table.
+		/// </summary>
+		/// <remarks>
+		/// Should really have been called 'segmentColumnLength' or even better 'segmentColumnSize'.
+		/// </remarks>
+		public int SegmentValueLength { get; private set; }
+
+
+		/// <summary>
+		/// The name of the column in which we store our persistent generator value.
+		/// </summary>
 		public string ValueColumnName { get; private set; }
+
+
+		/// <summary>
+		/// The initial value to use when we find no previous state in the
+		/// generator table corresponding to this instance.
+		/// </summary>
 		public int InitialValue { get; private set; }
-		//private string valueColumnName;
-		//private int initialValue;
+
+
+		/// <summary>
+		/// The amount of increment to use.  The exact implications of this
+		/// depends on the optimizer being used, see <see cref="Optimizer"/>.
+		/// </summary>
 		public int IncrementSize { get; private set; }
-		//private int incrementSize;
+
+
+		/// <summary>
+		/// The optimizer being used by this generator. This mechanism
+		/// allows avoiding calling the database each time a new identifier
+		/// is needed.
+		/// </summary>
+		public IOptimizer Optimizer { get; private set; }
+
+
+		/// <summary>
+		/// The table access count. Only really useful for unit test assertions.
+		/// </summary>
+		public long TableAccessCount { get; private set; }
+
 
 		private SqlString selectQuery;
 		private SqlTypes.SqlType[] selectParameterTypes;
@@ -143,116 +194,13 @@ namespace NHibernate.Id.Enhanced
 		private SqlString updateQuery;
 		private SqlTypes.SqlType[] updateParameterTypes;
 
-		public IOptimizer Optimizer { get; private set; }
-		//private IOptimizer optimizer;
-		public long TableAccessCount { get; private set; }
-		//private long accessCount = 0;
+
 
 
 		public virtual string GeneratorKey()
 		{
 			return TableName;
 		}
-
-		///**
-		// * Type mapping for the identifier.
-		// *
-		// * @return The identifier type mapping.
-		// */
-		//public final Type getIdentifierType() {
-		//    return identifierType;
-		//}
-
-		/**
-		 * The name of the table in which we store this generator's persistent state.
-		 *
-		 * @return The table name.
-		 */
-		//public final String getTableName() {
-		//    return tableName;
-		//}
-
-		/**
-		 * The name of the column in which we store the segment to which each row
-		 * belongs.  The value here acts as PK.
-		 *
-		 * @return The segment column name
-		 */
-		//public final String getSegmentColumnName() {
-		//    return segmentColumnName;
-		//}
-
-		/**
-		 * The value in {@link #getSegmentColumnName segment column} which
-		 * corresponding to this generator instance.  In other words this value
-		 * indicates the row in which this generator instance will store values.
-		 *
-		 * @return The segment value for this generator instance.
-		 */
-		//public final String getSegmentValue() {
-		//    return segmentValue;
-		//}
-
-		/**
-		 * The size of the {@link #getSegmentColumnName segment column} in the
-		 * underlying table.
-		 * <p/>
-		 * <b>NOTE</b> : should really have been called 'segmentColumnLength' or
-		 * even better 'segmentColumnSize'
-		 *
-		 * @return the column size.
-		 */
-		//public final int getSegmentValueLength() {
-		//    return segmentValueLength;
-		//}
-
-		/**
-		 * The name of the column in which we store our persistent generator value.
-		 *
-		 * @return The name of the value column.
-		 */
-		//public final String getValueColumnName() {
-		//    return valueColumnName;
-		//}
-
-		/**
-		 * The initial value to use when we find no previous state in the
-		 * generator table corresponding to our sequence.
-		 *
-		 * @return The initial value to use.
-		 */
-		//public final int getInitialValue() {
-		//    return initialValue;
-		//}
-
-		/**
-		 * The amount of increment to use.  The exact implications of this
-		 * depends on the {@link #getOptimizer() optimizer} being used.
-		 *
-		 * @return The increment amount.
-		 */
-		//public final int getIncrementSize() {
-		//    return incrementSize;
-		//}
-
-		/**
-		 * The optimizer being used by this generator.
-		 *
-		 * @return Out optimizer.
-		 */
-		//public final Optimizer getOptimizer() {
-		//    return optimizer;
-		//}
-
-		/**
-		 * Getter for property 'tableAccessCount'.  Only really useful for unit test
-		 * assertions.
-		 *
-		 * @return Value for property 'tableAccessCount'.
-		 */
-		//public final long getTableAccessCount() {
-		//    return accessCount;
-		//}
 
 
 		#region Implementation of IConfigurable
