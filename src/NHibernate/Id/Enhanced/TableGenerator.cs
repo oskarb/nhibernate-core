@@ -12,79 +12,79 @@ using NHibernate.AdoNet.Util;
 
 namespace NHibernate.Id.Enhanced
 {
-	/**
-	 * An enhanced version of table-based id generation.
-	 * <p/>
-	 * Unlike the simplistic legacy one (which, btw, was only ever intended for subclassing
-	 * support) we "segment" the table into multiple values.  Thus a single table can
-	 * actually serve as the persistent storage for multiple independent generators.  One
-	 * approach would be to segment the values by the name of the entity for which we are
-	 * performing generation, which would mean that we would have a row in the generator
-	 * table for each entity name.  Or any configuration really; the setup is very flexible.
-	 * <p/>
-	 * In this respect it is very similar to the legacy
-	 * {@link org.hibernate.id.MultipleHiLoPerTableGenerator} in terms of the
-	 * underlying storage structure (namely a single table capable of holding
-	 * multiple generator values).  The differentiator is, as with
-	 * {@link SequenceStyleGenerator} as well, the externalized notion
-	 * of an optimizer.
-	 * <p/>
-	 * <b>NOTE</b> that by default we use a single row for all generators (based
-	 * on {@link #DefaultSegmentValue}).  The configuration parameter
-	 * {@link #ConfigPreferSegmentPerEntity} can be used to change that to
-	 * instead default to using a row for each entity name.
-	 * <p/>
-	 * Configuration parameters:
-	 * <table>
-	 * 	 <tr>
-	 *     <td><b>NAME</b></td>
-	 *     <td><b>DEFAULT</b></td>
-	 *     <td><b>DESCRIPTION</b></td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #TableParam}</td>
-	 *     <td>{@link #DefaultTable}</td>
-	 *     <td>The name of the table to use to store/retrieve values</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #ValueColumnParam}</td>
-	 *     <td>{@link #DefaultValueColumn}</td>
-	 *     <td>The name of column which holds the sequence value for the given segment</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #SegmentColumnParam}</td>
-	 *     <td>{@link #DefaultSegmentColumn}</td>
-	 *     <td>The name of the column which holds the segment key</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #SegmentValueParam}</td>
-	 *     <td>{@link #DefaultSegmentValue}</td>
-	 *     <td>The value indicating which segment is used by this generator; refers to values in the {@link #SEGMENT_COLUMN_PARAM} column</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #SegmentLengthParam}</td>
-	 *     <td>{@link #DefaultSegmentLength}</td>
-	 *     <td>The data length of the {@link #SEGMENT_COLUMN_PARAM} column; used for schema creation</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #InitialParam}</td>
-	 *     <td>{@link #DefaltInitialValue}</td>
-	 *     <td>The initial value to be stored for the given segment</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #IncrementParam}</td>
-	 *     <td>{@link #DefaultIncrementSize}</td>
-	 *     <td>The increment size for the underlying segment; see the discussion on {@link Optimizer} for more details.</td>
-	 *   </tr>
-	 *   <tr>
-	 *     <td>{@link #OptimizerParam}</td>
-	 *     <td><i>depends on defined increment size</i></td>
-	 *     <td>Allows explicit definition of which optimization strategy to use</td>
-	 *   </tr>
-	 * </table>
-	 *
-	 * @author Steve Ebersole
-	 */
+	/// <summary>
+	/// An enhanced version of table-based id generation.
+	/// </summary>
+	/// <remarks>
+	/// Unlike the simplistic legacy one (which, btw, was only ever intended for subclassing
+	/// support) we "segment" the table into multiple values. Thus a single table can
+	/// actually serve as the persistent storage for multiple independent generators.  One
+	/// approach would be to segment the values by the name of the entity for which we are
+	/// performing generation, which would mean that we would have a row in the generator
+	/// table for each entity name.  Or any configuration really; the setup is very flexible.
+	/// <para>
+	/// In this respect it is very similar to the legacy
+	/// MultipleHiLoPerTableGenerator (not available in NHibernate) in terms of the
+	/// underlying storage structure (namely a single table capable of holding
+	/// multiple generator values). The differentiator is, as with
+	/// <see cref="SequenceStyleGenerator"/> as well, the externalized notion
+	/// of an optimizer.
+	/// </para>
+	/// <para>
+	/// <b>NOTE</b> that by default we use a single row for all generators (based
+	/// on <see cref="DefaultSegmentValue"/>).  The configuration parameter
+	/// <see cref="ConfigPreferSegmentPerEntity"/> can be used to change that to
+	/// instead default to using a row for each entity name.
+	/// </para>
+	/// Configuration parameters:
+	///<table>
+	///	 <tr>
+	///    <td><b>NAME</b></td>
+	///    <td><b>DEFAULT</b></td>
+	///    <td><b>DESCRIPTION</b></td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="TableParam"/></td>
+	///    <td><see cref="DefaultTable"/></td>
+	///    <td>The name of the table to use to store/retrieve values</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="ValueColumnParam"/></td>
+	///    <td><see cref="DefaultValueColumn"/></td>
+	///    <td>The name of column which holds the sequence value for the given segment</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="SegmentColumnParam"/></td>
+	///    <td><see cref="DefaultSegmentColumn"/></td>
+	///    <td>The name of the column which holds the segment key</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="SegmentValueParam"/></td>
+	///    <td><see cref="DefaultSegmentValue"/></td>
+	///    <td>The value indicating which segment is used by this generator; refers to values in the <see cref="SegmentColumnParam"/> column</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="SegmentLengthParam"/></td>
+	///    <td><see cref="DefaultSegmentLength"/></td>
+	///    <td>The data length of the <see cref="SegmentColumnParam"/> column; used for schema creation</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="InitialParam"/></td>
+	///    <td><see cref="DefaltInitialValue"/></td>
+	///    <td>The initial value to be stored for the given segment</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="IncrementParam"/></td>
+	///    <td><see cref="DefaultIncrementSize"/></td>
+	///    <td>The increment size for the underlying segment; see the discussion on <see cref="Optimizer"/> for more details.</td>
+	///  </tr>
+	///  <tr>
+	///    <td><see cref="OptimizerParam"/></td>
+	///    <td><i>depends on defined increment size</i></td>
+	///    <td>Allows explicit definition of which optimization strategy to use</td>
+	///  </tr>
+	///</table>
+	/// </remarks>
 	public class TableGenerator : TransactionHelper, IPersistentIdentifierGenerator, IConfigurable
 	{
 		private static readonly IInternalLogger log = LoggerProvider.LoggerFor(typeof(SequenceStyleGenerator));
