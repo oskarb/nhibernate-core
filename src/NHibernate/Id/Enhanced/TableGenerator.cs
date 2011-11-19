@@ -287,8 +287,8 @@ namespace NHibernate.Id.Enhanced
                     optimizationStrategy,
                     IdentifierType.ReturnedClass,
                     IncrementSize,
-					PropertiesHelper.GetInt32(INITIAL_PARAM, parms, -1)  // Use -1 as default initial value here to signal that it's not set.
-				);
+                    PropertiesHelper.GetInt32(INITIAL_PARAM, parms, -1)  // Use -1 as default initial value here to signal that it's not set.
+                );
         }
 
         #endregion
@@ -502,9 +502,9 @@ namespace NHibernate.Id.Enhanced
             }
             #region IAccessCallback Members
 
-            public long NextValue
+            public long GetNextValue()
             {
-                get { return Convert.ToInt64(owner.DoWorkInNewTransaction(session)); }
+                return Convert.ToInt64(owner.DoWorkInNewTransaction(session));
             }
 
             #endregion
