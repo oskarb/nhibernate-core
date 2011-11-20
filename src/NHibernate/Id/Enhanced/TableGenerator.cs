@@ -223,7 +223,7 @@ namespace NHibernate.Id.Enhanced
 			BuildUpdateQuery();
 			BuildInsertQuery();
 
-			
+
 			// if the increment size is greater than one, we prefer pooled optimization; but we
 			// need to see if the user prefers POOL or POOL_LO...
 			string defaultPooledOptimizerStrategy = PropertiesHelper.GetBoolean(Cfg.Environment.PreferPooledValuesLo, parms, false)
@@ -253,6 +253,7 @@ namespace NHibernate.Id.Enhanced
 			bool isGivenNameUnqualified = name.IndexOf('.') < 0;
 			if (isGivenNameUnqualified)
 			{
+				// NHibernate doesn't seem to have anything resembling this ObjectNameNormalizer. Ignore that for now.
 				//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
 				//name = normalizer.normalizeIdentifierQuoting( name );
 				//// if the given name is un-qualified we may neen to qualify it
@@ -263,7 +264,7 @@ namespace NHibernate.Id.Enhanced
 				string catalogName;
 				parms.TryGetValue(PersistentIdGeneratorParmsNames.Schema, out schemaName);
 				parms.TryGetValue(PersistentIdGeneratorParmsNames.Catalog, out catalogName);
-				name = Table.Qualify(catalogName, schemaName, name);
+				name = dialect.Qualify(catalogName, schemaName, name);
 			}
 			else
 			{
@@ -281,26 +282,29 @@ namespace NHibernate.Id.Enhanced
 		/// <param name="parms">The parameters supplied in the generator config (plus some standard useful extras).</param>
 		protected string DetermineSegmentColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
+			// NHibernate doesn't seem to have anything resembling this ObjectNameNormalizer. Ignore that for now.
 			//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
 			string name = PropertiesHelper.GetString(SegmentColumnParam, parms, DefaultSegmentColumn);
-			return name;
+			return dialect.QuoteForColumnName(name);
 			//return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 		}
 
-		
+
 		/// <summary>
 		/// Determine the name of the column in which we will store the generator persistent value.
 		/// Called during configuration.
 		/// </summary>
 		protected string DetermineValueColumnName(IDictionary<string, string> parms, Dialect.Dialect dialect)
 		{
+			// NHibernate doesn't seem to have anything resembling this ObjectNameNormalizer. Ignore that for now.
 			//ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
 			string name = PropertiesHelper.GetString(ValueColumnParam, parms, DefaultValueColumn);
 			//return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
-			return name;
+
+			return dialect.QuoteForColumnName(name);
 		}
 
-	
+
 		/// <summary>
 		/// Determine the segment value corresponding to this generator instance. Called during configuration.
 		/// </summary>
@@ -310,15 +314,9 @@ namespace NHibernate.Id.Enhanced
 			if (string.IsNullOrEmpty(segmentValue))
 				segmentValue = DetermineDefaultSegmentValue(parms);
 			return segmentValue;
-
-			//string segmentValue = params.getProperty( SEGMENT_VALUE_PARAM );
-			//if ( StringHelper.isEmpty( segmentValue ) ) {
-			//    segmentValue = determineDefaultSegmentValue( params );
-			//}
-			//return segmentValue;
 		}
 
-		
+
 		/// <summary>
 		/// Used in the cases where <see cref="DetermineSegmentValue"/> is unable to
 		/// determine the value to use.
@@ -328,11 +326,12 @@ namespace NHibernate.Id.Enhanced
 			bool preferSegmentPerEntity = PropertiesHelper.GetBoolean(ConfigPreferSegmentPerEntity, parms, false);
 			string defaultToUse = preferSegmentPerEntity ? parms[PersistentIdGeneratorParmsNames.Table] : DefaultSegmentValue;
 
-			//LOG.usingDefaultIdGeneratorSegmentValue(tableName, segmentColumnName, defaultToUse);
+			log.DebugFormat("Explicit segment value for id generator [{0}.{1}] suggested; using default [{2}].", TableName, SegmentColumnName, defaultToUse);
+
 			return defaultToUse;
 		}
 
-		
+
 		/// <summary>
 		/// Determine the size of the <see cref="SegmentColumnName"/> segment column.
 		/// Called during configuration.
@@ -383,7 +382,7 @@ namespace NHibernate.Id.Enhanced
 				.Add(" set ").Add(ValueColumnName).Add(" = ").AddParameter()
 				.Add(" where ").Add(ValueColumnName).Add(" = ").AddParameter()
 				.Add(" and ").Add(SegmentColumnName).Add(" = ").AddParameter();
-			
+
 			updateQuery = builder.ToSqlString();
 			updateParameterTypes = new[]
 			{
@@ -400,7 +399,7 @@ namespace NHibernate.Id.Enhanced
 			builder.Add("insert into " + TableName)
 				.Add(" (" + SegmentColumnName + ", " + ValueColumnName + ") ")
 				.Add(" values (").AddParameter().Add(", ").AddParameter().Add(")");
-			
+
 			insertQuery = builder.ToSqlString();
 			insertParameterTypes = new[] {
 				SqlTypes.SqlTypeFactory.GetAnsiString(SegmentValueLength),
@@ -409,19 +408,12 @@ namespace NHibernate.Id.Enhanced
 		}
 
 
-		//@Override
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public virtual object Generate(ISessionImplementor session, object obj)
 		{
-			//public synchronized Serializable generate(final SessionImplementor session, Object obj) {
-			//final SqlStatementLogger statementLogger = session
-			//        .getFactory()
-			//        .getServiceRegistry()
-			//        .getService( JdbcServices.class )
-			//        .getSqlStatementLogger();
-
 			return Optimizer.Generate(new TableAccessCallback(session, this));
 		}
+
 
 		private class TableAccessCallback : IAccessCallback
 		{
@@ -433,6 +425,7 @@ namespace NHibernate.Id.Enhanced
 				this.session = session;
 				this.owner = owner;
 			}
+
 			#region IAccessCallback Members
 
 			public long GetNextValue()
@@ -442,6 +435,7 @@ namespace NHibernate.Id.Enhanced
 
 			#endregion
 		}
+
 
 		public override object DoWorkInCurrentTransaction(ISessionImplementor session, System.Data.IDbConnection conn, System.Data.IDbTransaction transaction)
 		{
