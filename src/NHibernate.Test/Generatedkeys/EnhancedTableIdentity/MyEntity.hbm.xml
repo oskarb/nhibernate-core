@@ -7,7 +7,9 @@
 	<class name="MyEntity" table="my_entity">
 
 		<id name="id">
-			<generator class="NHibernate.Id.Enhanced.TableGenerator, NHibernate"/>
+      <generator class="NHibernate.Id.Enhanced.TableGenerator, NHibernate">
+        <param name="increment_size">10</param>
+      </generator>
 		</id>
 		<natural-id>
 			<property name="name"/>
