@@ -99,7 +99,7 @@ namespace NHibernate.Id.Enhanced
 				? OptimizerFactory.PoolLo
 				: OptimizerFactory.Pool;
 			string defaultOptimizerStrategy = incrementSize <= 1 ? OptimizerFactory.None : defaultPooledOptimizerStrategy;
-			string optimizationStrategy = PropertiesHelper.GetString(OptimizerParam, parms, defaultPooledOptimizerStrategy);
+            string optimizationStrategy = PropertiesHelper.GetString(OptimizerParam, parms, defaultOptimizerStrategy);
 
 			if (OptimizerFactory.None.Equals(optimizationStrategy) && incrementSize > 1)
 			{
