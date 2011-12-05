@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
-using NHibernate.Cfg;
 using NHibernate.Dialect;
+using NHibernate.Driver;
 using NUnit.Framework;
-using Environment=NHibernate.Cfg.Environment;
 
 namespace NHibernate.Test.DriverTest
 {
@@ -85,6 +84,43 @@ namespace NHibernate.Test.DriverTest
 			{
 				s.CreateQuery("delete from MultiTypeEntity").ExecuteUpdate();
 				t.Commit();
+			}
+		}
+
+		[Test]
+		public void QueryPlansAreReused()
+		{
+			if (!(sessions.ConnectionProvider.Driver is SqlClientDriver))
+				Assert.Ignore("Test designed for SqlClientDriver only");
+
+			using (ISession s = OpenSession())
+			using (ITransaction t = s.BeginTransaction())
+			{
+				// clear the existing plan cache
+				s.CreateSQLQuery("DBCC FREEPROCCACHE").ExecuteUpdate();
+				t.Commit();
+			}
+
+			using (ISession s = OpenSession())
+			using (ITransaction t = s.BeginTransaction())
+			{
+				var countPlansCommand = s.CreateSQLQuery("SELECT COUNT(*) FROM sys.dm_exec_cached_plans");
+
+				var beforeCount = countPlansCommand.UniqueResult<int>();
+
+				var insertCount = 10;
+				for (var i=0; i<insertCount; i++)
+				{
+					s.Save(new MultiTypeEntity() { StringProp = new string('x', i + 1) });
+					s.Flush();
+				}
+
+				var afterCount = countPlansCommand.UniqueResult<int>();
+
+				Assert.That(afterCount - beforeCount, Is.LessThan(insertCount - 1),
+					string.Format("Excessive query plans created: before={0} after={1}", beforeCount, afterCount));
+
+				t.Rollback();
 			}
 		}
 	}

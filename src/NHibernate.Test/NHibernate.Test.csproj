@@ -439,7 +439,10 @@
     <Compile Include="Hql\Ast\WithClauseFixture.cs" />
     <Compile Include="Hql\Ast\Zoo.cs" />
     <Compile Include="Hql\BaseFunctionFixture.cs" />
+    <Compile Include="IdGen\Enhanced\Forcedtable\Entity.cs" />
     <Compile Include="IdGen\Enhanced\OptimizerTests.cs" />
+    <Compile Include="IdGen\Enhanced\Sequence\DefaultOptimizedSequenceTest.cs" />
+    <Compile Include="IdGen\Enhanced\Sequence\Entity.cs" />
     <Compile Include="IdGen\Enhanced\SourceMock.cs" />
     <Compile Include="IdTest\AssignedClass.cs" />
     <Compile Include="IdTest\AssignedFixture.cs" />
@@ -973,6 +976,7 @@
     <Compile Include="TransformTests\ImplementationOfEqualityTests.cs" />
     <Compile Include="TypesTest\CharClass.cs" />
     <Compile Include="TypesTest\CharClassFixture.cs" />
+    <Compile Include="TypesTest\StringTypeWithLengthFixture.cs" />
     <Compile Include="TypesTest\DateTimeClass.cs" />
     <Compile Include="TypesTest\LocalDateTimeTypeFixture.cs" />
     <Compile Include="TypesTest\UriClass.cs" />
@@ -2768,11 +2772,25 @@
     <EmbeddedResource Include="NHSpecificTest\NH1291AnonExample\Mappings.hbm.xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IdGen\Enhanced\Sequence\HiLoSequenceTest.cs" />
+    <Compile Include="IdGen\Enhanced\Sequence\PooledSequenceTest.cs" />
+    <Compile Include="IdGen\Enhanced\Forcedtable\BasicForcedTableSequenceTest.cs" />
+    <Compile Include="IdGen\Enhanced\Forcedtable\HiLoForcedTableSequenceTest.cs" />
+    <Compile Include="IdGen\Enhanced\Forcedtable\PooledForcedTableSequenceTest.cs" />
+    <EmbeddedResource Include="IdGen\Enhanced\Sequence\DefaultOptimized.hbm.xml" />
+    <EmbeddedResource Include="IdGen\Enhanced\Forcedtable\Pooled.hbm.xml" />
+    <EmbeddedResource Include="IdGen\Enhanced\Forcedtable\HiLo.hbm.xml" />
+    <EmbeddedResource Include="IdGen\Enhanced\Forcedtable\Basic.hbm.xml" />
+    <EmbeddedResource Include="IdGen\Enhanced\Sequence\Pooled.hbm.xml" />
+    <EmbeddedResource Include="IdGen\Enhanced\Sequence\HiLo.hbm.xml" />
+    <EmbeddedResource Include="IdGen\Enhanced\Sequence\Basic.hbm.xml" />
+    <Compile Include="IdGen\Enhanced\Sequence\BasicSequenceTest.cs" />
     <EmbeddedResource Include="Generatedkeys\EnhancedTableIdentity\MyEntity.hbm.xml" />
     <EmbeddedResource Include="NHSpecificTest\NH2951\Mappings.hbm.xml" />
     <EmbeddedResource Include="NHSpecificTest\NH2913\Mappings.hbm.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="TypesTest\StringClassWithLength.hbm.xml" />
     <EmbeddedResource Include="NHSpecificTest\NH1007\Mappings.hbm.xml" />
     <EmbeddedResource Include="NHSpecificTest\NH2869\Mappings.hbm.xml" />
     <EmbeddedResource Include="NHSpecificTest\NH0000\Mappings.hbm.xml" />
