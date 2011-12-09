@@ -442,6 +442,7 @@
     <Compile Include="IdGen\Enhanced\Sequence\DefaultOptimizedSequenceTest.cs" />
     <Compile Include="IdGen\Enhanced\Sequence\Entity.cs" />
     <Compile Include="IdGen\Enhanced\SourceMock.cs" />
+    <Compile Include="IdGen\Enhanced\Table\PooledLoTableTest.cs" />
     <Compile Include="IdTest\AssignedClass.cs" />
     <Compile Include="IdTest\AssignedFixture.cs" />
     <Compile Include="IdTest\TableGeneratorFixture.cs" />
@@ -2777,6 +2778,7 @@
     <Compile Include="IdGen\Enhanced\Forcedtable\PooledForcedTableSequenceTest.cs" />
     <Compile Include="IdGen\Enhanced\Table\Entity.cs" />
     <Compile Include="IdGen\Enhanced\Table\BasicTableTest.cs" />
+    <EmbeddedResource Include="IdGen\Enhanced\Table\PooledLo.hbm.xml" />
     <EmbeddedResource Include="IdGen\Enhanced\Table\Pooled.hbm.xml" />
     <Compile Include="IdGen\Enhanced\Table\PooledTableTest.cs" />
     <EmbeddedResource Include="IdGen\Enhanced\Table\HiLo.hbm.xml" />
