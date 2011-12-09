@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using System.Data.Common;
 
@@ -55,7 +56,14 @@ namespace NHibernate.Id.Enhanced
 		public string[] SqlCreateStrings(Dialect.Dialect dialect)
 		{
 			int sourceIncrementSize = _applyIncrementSizeToSourceValues ? _incrementSize : 1;
-			return dialect.GetCreateSequenceStrings(_sequenceName, _initialValue, sourceIncrementSize);
+
+			// If pooled sequences aren't supported, but needed here, the dialect will throw, which is
+			// ok, since the SequenceStyleGenerator is responsible for not using us in that case.
+
+			if (_initialValue > 1 || sourceIncrementSize > 1)
+				return dialect.GetCreateSequenceStrings(_sequenceName, _initialValue, sourceIncrementSize);
+			else
+				return new[] { dialect.GetCreateSequenceString(_sequenceName) };
 		}
 
 		public string[] SqlDropStrings(Dialect.Dialect dialect)
@@ -98,7 +106,7 @@ namespace NHibernate.Id.Enhanced
 						try
 						{
 							rs.Read();
-							long result = rs.GetInt64(0);
+							long result = Convert.ToInt64(rs.GetValue(0));
 							if (Log.IsDebugEnabled)
 							{
 								Log.Debug("Sequence value obtained: " + result);
@@ -124,8 +132,7 @@ namespace NHibernate.Id.Enhanced
 				}
 				catch (DbException sqle)
 				{
-					throw ADOExceptionHelper.Convert(_session.Factory.SQLExceptionConverter, sqle, "could not get next sequence value",
-													 _owner._sql);
+					throw ADOExceptionHelper.Convert(_session.Factory.SQLExceptionConverter, sqle, "could not get next sequence value", _owner._sql);
 				}
 			}
 
