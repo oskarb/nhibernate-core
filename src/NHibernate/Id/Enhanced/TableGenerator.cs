@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-
+﻿using System;
+using System.Data;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NHibernate.Engine;
 using NHibernate.Mapping;
 using NHibernate.Type;
 using NHibernate.Util;
 using NHibernate.SqlCommand;
-using System.Runtime.CompilerServices;
-using System;
-using System.Data;
 using NHibernate.AdoNet.Util;
 
 namespace NHibernate.Id.Enhanced
@@ -193,8 +192,6 @@ namespace NHibernate.Id.Enhanced
 		private SqlTypes.SqlType[] insertParameterTypes;
 		private SqlString updateQuery;
 		private SqlTypes.SqlType[] updateParameterTypes;
-
-
 
 
 		public virtual string GeneratorKey()
@@ -517,9 +514,6 @@ namespace NHibernate.Id.Enhanced
 
 			return result;
 		}
-
-
-
 
 
 		public virtual string[] SqlCreateStrings(Dialect.Dialect dialect)
