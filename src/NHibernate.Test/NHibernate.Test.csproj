@@ -2777,6 +2777,13 @@
     <Compile Include="IdGen\Enhanced\Forcedtable\BasicForcedTableSequenceTest.cs" />
     <Compile Include="IdGen\Enhanced\Forcedtable\HiLoForcedTableSequenceTest.cs" />
     <Compile Include="IdGen\Enhanced\Forcedtable\PooledForcedTableSequenceTest.cs" />
+    <Compile Include="IdGen\Enhanced\Table\Entity.cs" />
+    <Compile Include="IdGen\Enhanced\Table\BasicTableTest.cs" />
+    <EmbeddedResource Include="IdGen\Enhanced\Table\Pooled.hbm.xml" />
+    <Compile Include="IdGen\Enhanced\Table\PooledTableTest.cs" />
+    <EmbeddedResource Include="IdGen\Enhanced\Table\HiLo.hbm.xml" />
+    <Compile Include="IdGen\Enhanced\Table\HiLoTableTest.cs" />
+    <EmbeddedResource Include="IdGen\Enhanced\Table\Basic.hbm.xml" />
     <EmbeddedResource Include="IdGen\Enhanced\Sequence\DefaultOptimized.hbm.xml" />
     <EmbeddedResource Include="IdGen\Enhanced\Forcedtable\Pooled.hbm.xml" />
     <EmbeddedResource Include="IdGen\Enhanced\Forcedtable\HiLo.hbm.xml" />
