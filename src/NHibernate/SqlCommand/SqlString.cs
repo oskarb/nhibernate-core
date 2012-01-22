@@ -277,7 +277,7 @@ namespace NHibernate.SqlCommand
 
 			bool inQuote = false;
 			foreach (char ch in sql)
-			{
+		{
 				switch (ch)
 				{
 					case '?':
@@ -288,7 +288,7 @@ namespace NHibernate.SqlCommand
 						else
 						{
 							if (content.Length > 0)
-							{
+						{
 								result.Add(content.ToString());
 								content.Length = 0;
 							}
@@ -398,7 +398,7 @@ namespace NHibernate.SqlCommand
 		{
 			return this;
 		}
-
+		
 		/// <summary>
 		/// Makes a copy of the SqlString, with new parameter references (Placeholders)
 		/// </summary>
@@ -493,7 +493,7 @@ namespace NHibernate.SqlCommand
 			if (sql == null || sql._length == 0) return this;
 			return new SqlString(new object[] { Substring(0, index), sql, Substring(index, _length - index) });
 		}
-
+		
 		public int LastIndexOfCaseInsensitive(string text)
 		{
 			return LastIndexOf(text, 0, _length, StringComparison.InvariantCultureIgnoreCase);
@@ -576,7 +576,7 @@ namespace NHibernate.SqlCommand
 				yield return new SqlString(this, _sqlStartIndex + startIndex, _length - startIndex);
 			}
 		}
-
+		
 		/// <summary>
 		/// Determines whether the beginning of this SqlString matches the specified System.String,
 		/// using case-insensitive comparison.
@@ -589,7 +589,7 @@ namespace NHibernate.SqlCommand
 				&& value.Length <= _length
 				&& IndexOf(value, 0, value.Length, StringComparison.InvariantCultureIgnoreCase) >= 0;
 		}
-
+		
 		/// <summary>
 		/// Retrieves a substring from this instance. The substring starts at a specified character position. 
 		/// </summary>
@@ -820,7 +820,7 @@ namespace NHibernate.SqlCommand
 			if (_length != other._length) return false;
 			if (_lastPartIndex - _firstPartIndex != other._lastPartIndex - other._firstPartIndex) return false;
 			if (_parameters.Count != other._parameters.Count) return false;
-
+			
 			using (var partEnum = this.GetEnumerator())
 			using (var otherPartEnum = other.GetEnumerator())
 			{
@@ -837,15 +837,19 @@ namespace NHibernate.SqlCommand
 
 		public override int GetHashCode()
 		{
-			int hashCode = 0;
+			const uint FNV_OFFSET_BASIS = 2166136261;
+			const uint FNV_PRIME = 16777619;
+
+			uint hashCode = FNV_OFFSET_BASIS;
 			unchecked
 			{
 				for (int i = 0; i < _parts.Count; i++)
 				{
-					hashCode += _parts[i].GetHashCode();
+					hashCode ^= (uint)_parts[i].GetHashCode();
+					hashCode *= FNV_PRIME;
 				}
+				return (int)hashCode;
 			}
-			return hashCode;
 		}
 
 		/// <summary>
