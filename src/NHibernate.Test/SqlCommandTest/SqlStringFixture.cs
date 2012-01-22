@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NHibernate.SqlCommand;
 using NUnit.Framework;
@@ -13,6 +14,44 @@ namespace NHibernate.Test.SqlCommandTest
 	[TestFixture]
 	public class SqlStringFixture
 	{
+
+		//[Test]
+		//public void StringPerf()
+		//{
+		//
+		//    // Just a quick piece of code to measure performance of some SqlString operations. Commented out,
+		//    // since we don't want this to run on every build.
+		//
+		//    var str = new SqlString(new object[] { "  select x from xs where ", Parameter.Placeholder, " and ", Parameter.Placeholder, " and ", Parameter.Placeholder, " and ", Parameter.Placeholder, " and ", Parameter.Placeholder, " and ", Parameter.Placeholder, "   " });
+
+		//    double[] allSub = new double[5];
+		//    for (int a = 0; a < 5; ++a)
+		//    {
+		//        Stopwatch sw = Stopwatch.StartNew();
+		//        for (int i = 0; i < 10000; ++i)
+		//            str.Substring(6, 20);
+		//        sw.Stop();
+		//        Console.WriteLine(" Substring 10000 iterations (ms): " + sw.Elapsed.TotalMilliseconds);
+		//        allSub[a] = sw.Elapsed.TotalMilliseconds;
+		//    }
+		//    Console.WriteLine("Substring average per 10000 iters (ms): " + allSub.Average());
+
+
+		//    double[] allTrim = new double[5];
+		//    for (int a = 0; a < 5; ++a)
+		//    {
+		//        Stopwatch sw = Stopwatch.StartNew();
+		//        for (int i = 0; i < 10000; ++i)
+		//            str.Trim();
+		//        sw.Stop();
+		//        Console.WriteLine(" Trim 10000 iterations (ms): " + sw.Elapsed.TotalMilliseconds);
+		//        allTrim[a] = sw.Elapsed.TotalMilliseconds;
+		//    }
+
+		//    Console.WriteLine("Trim average per 10000 iters (ms): " + allTrim.Average());
+		//}
+
+
 		[Test]
 		public void Append()
 		{
@@ -405,6 +444,22 @@ namespace NHibernate.Test.SqlCommandTest
 
 			// more simple version of the test
 			Parameter.Placeholder.Should().Not.Be.SameInstanceAs(Parameter.Placeholder);
+		}
+
+
+		[Test]
+		public void HashcodeEqualForEqualStringsWithDifferentHistory()
+		{
+			// Verify that sql strings that are generated in different ways, but _now_ have
+			// equal content, also have equal hashcodes.
+
+			SqlString sql = new SqlString(new string[] { "select", " from table" });
+			sql = sql.Substring(6);
+
+			SqlString sql2 = new SqlString(new string[] { " from table" });
+
+			Assert.That(sql, Is.EqualTo(sql2));
+			Assert.That(sql.GetHashCode(), Is.EqualTo(sql2.GetHashCode()));
 		}
 	}
 }

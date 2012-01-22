@@ -6,15 +6,13 @@ using System.Collections;
 
 namespace NHibernate.SqlCommand
 {
-	using NHibernate.Exceptions;
-
 	/// <summary>
 	/// This is a non-modifiable SQL statement that is ready to be prepared 
 	/// and sent to the Database for execution.
 	/// </summary>
 	/// <remarks>
 	/// <para>A <see cref="SqlString"/> represents a (potentially partial) SQL query string 
-	/// thay may or may not contain query parameter references. A <see cref="SqlString"/>
+	/// that may or may not contain query parameter references. A <see cref="SqlString"/>
 	/// decomposes the underlying SQL query string into a list of parts. Each part is either
 	/// 1) a string part, which represents a fragment of the underlying SQL query string that 
 	/// does not contain any parameter references, or 2) a parameter part, which represents
@@ -698,6 +696,10 @@ namespace NHibernate.SqlCommand
 
 		#region Private methods
 
+		/// <summary>
+		/// Locate the part that contains the requested character index, and return the
+		/// part's index. Return -1 if the character position isn't found.
+		/// </summary>
 		private int GetPartIndexForSqlIndex(int sqlIndex)
 		{
 			if (sqlIndex < _sqlStartIndex || sqlIndex >= _sqlStartIndex + _length) return -1;
@@ -814,6 +816,7 @@ namespace NHibernate.SqlCommand
 			if (other == null) return false;
 			if (other == this) return true;
 
+			// Exit early if the length or number of parts differ - cannot be equal then.
 			if (_length != other._length) return false;
 			if (_lastPartIndex - _firstPartIndex != other._lastPartIndex - other._firstPartIndex) return false;
 			if (_parameters.Count != other._parameters.Count) return false;
