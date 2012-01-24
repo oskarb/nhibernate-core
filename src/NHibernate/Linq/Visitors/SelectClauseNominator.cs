@@ -5,11 +5,27 @@ using NHibernate.Linq.Expressions;
 
 namespace NHibernate.Linq.Visitors
 {
+	/// <summary>
+	/// Analyze the select clause to determine what parts can be translated
+	/// fully to HQL, and some other properties of the clause.
+	/// </summary>
 	class SelectClauseHqlNominator : NhExpressionTreeVisitor
 	{
 		private readonly ILinqToHqlGeneratorsRegistry _functionRegistry;
 
-		private HashSet<Expression> _candidates;
+		/// <summary>
+		/// The expression parts that can be converted to pure HQL.
+		/// </summary>
+		public HashSet<Expression> HqlCandidates { get; private set; }
+
+		/// <summary>
+		/// If true after an expression have been analyzed, the
+		/// expression as a whole contain at least one method call which
+		/// cannot be converted to a registered function, i.e. it must
+		/// be executed client side.
+		/// </summary>
+		public bool ContainsUntranslatedMethodCalls { get; private set; }
+
 		private bool _canBeCandidate;
 		Stack<bool> _stateStack;
 
@@ -18,16 +34,15 @@ namespace NHibernate.Linq.Visitors
 			_functionRegistry = parameters.SessionFactory.Settings.LinqToHqlGeneratorsRegistry;
 		}
 
-		internal HashSet<Expression> Nominate(Expression expression)
+		internal void Visit(Expression expression)
 		{
-			_candidates = new HashSet<Expression>();
+			HqlCandidates = new HashSet<Expression>();
+			ContainsUntranslatedMethodCalls = false;
 			_canBeCandidate = true;
 			_stateStack = new Stack<bool>();
 			_stateStack.Push(false);
 
 			VisitExpression(expression);
-
-			return _candidates;
 		}
 
 		public override Expression VisitExpression(Expression expression)
@@ -36,9 +51,15 @@ namespace NHibernate.Linq.Visitors
 			{
 				bool projectConstantsInHql = _stateStack.Peek();
 
-				if (!projectConstantsInHql && expression != null && IsRegisteredFunction(expression))
+				// Set some flags, unless we already have proper values for them:
+				//    projectConstantsInHql if they are inside a method call executed server side.
+				//    ContainsUntranslatedMethodCalls if a method call must be executed locally.
+				var isMethodCall = expression != null && expression.NodeType == ExpressionType.Call;
+				if (isMethodCall && (!projectConstantsInHql || !ContainsUntranslatedMethodCalls))
 				{
-					projectConstantsInHql = true;
+					var isRegisteredFunction = IsRegisteredFunction(expression);
+					projectConstantsInHql = projectConstantsInHql || isRegisteredFunction;
+					ContainsUntranslatedMethodCalls = ContainsUntranslatedMethodCalls || !isRegisteredFunction;
 				}
 
 				_stateStack.Push(projectConstantsInHql);
@@ -52,7 +73,7 @@ namespace NHibernate.Linq.Visitors
 
 				if (CanBeEvaluatedInHqlStatementShortcut(expression))
 				{
-					_candidates.Add(expression);
+					HqlCandidates.Add(expression);
 					return expression;
 				}
 
@@ -62,7 +83,7 @@ namespace NHibernate.Linq.Visitors
 				{
 					if (CanBeEvaluatedInHqlSelectStatement(expression, projectConstantsInHql))
 					{
-						_candidates.Add(expression);
+						HqlCandidates.Add(expression);
 					}
 					else
 					{
