@@ -908,7 +908,7 @@ namespace NHibernate.Impl
 
 		private CacheKey GenerateCacheKeyForEvict(object id, IType type, string entityOrRoleName)
 		{
-			// if there is a session context, use that to generate the key.
+			// if there is a session context, use that to generate the key (may be tenant-specific session)
 			if (CurrentSessionContext != null)
 			{
 				return CurrentSessionContext
@@ -917,7 +917,12 @@ namespace NHibernate.Impl
 					.GenerateCacheKey(id, type, entityOrRoleName);
 			}
 
-			return new CacheKey(id, type, entityOrRoleName, EntityMode.Poco, this);
+			if (MultiTenancyStrategy.None != Settings.MultiTenancyStrategy)
+			{
+				throw new ApplicationException("Could not find an open session. When using a multi-tenant Session Factory, a open session context is required to evict entities by id");
+			}
+
+			return new CacheKey(id, type, entityOrRoleName, EntityMode.Poco, null, this);
 		}
 
 		public void EvictCollection(string roleName)

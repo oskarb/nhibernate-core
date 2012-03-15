@@ -25,6 +25,7 @@ namespace NHibernate.Engine
 		private IEntityPersister persister; // for convenience to save some lookups
 
 		private readonly EntityMode entityMode;
+		private readonly string tenantId;
 		private readonly string entityName;
 		private EntityKey cachedEntityKey;
 		private readonly bool isBeingReplicated;
@@ -45,10 +46,11 @@ namespace NHibernate.Engine
 		/// <param name="existsInDatabase">A boolean indicating if the Entity exists in the database.</param>
 		/// <param name="persister">The <see cref="IEntityPersister"/> that is responsible for this Entity.</param>
 		/// <param name="entityMode"></param>
+		/// <param name="tenantId">The tenant for the current session </param>
 		/// <param name="disableVersionIncrement"></param>
 		/// <param name="lazyPropertiesAreUnfetched"></param>
 		internal EntityEntry(Status status, object[] loadedState, object rowId, object id, object version, LockMode lockMode,
-			bool existsInDatabase, IEntityPersister persister, EntityMode entityMode,
+			bool existsInDatabase, IEntityPersister persister, EntityMode entityMode, string tenantId,
 			bool disableVersionIncrement, bool lazyPropertiesAreUnfetched)
 		{
 			this.status = status;
@@ -64,6 +66,7 @@ namespace NHibernate.Engine
 			loadedWithLazyPropertiesUnfetched = lazyPropertiesAreUnfetched;
 			this.persister = persister;
 			this.entityMode = entityMode;
+			this.tenantId = tenantId;
 			entityName = persister == null ? null : persister.EntityName;
 		}
 
@@ -200,7 +203,7 @@ namespace NHibernate.Engine
 					if (id == null)
 						throw new InvalidOperationException("cannot generate an EntityKey when id is null.");
 
-					cachedEntityKey = new EntityKey(id, persister, entityMode);
+					cachedEntityKey = new EntityKey(id, persister, entityMode, tenantId);
 				}
 				return cachedEntityKey;
 			}

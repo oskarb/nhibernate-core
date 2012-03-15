@@ -305,6 +305,11 @@ namespace NHibernate.Engine
 
 		void CloseSessionFromDistributedTransaction();
 
+		/// <summary>
+		/// The tenant identifier of this session
+		/// </summary>
+		string TenantIdentifier { get; }
+
 		EntityKey GenerateEntityKey(object id, IEntityPersister persister);
 
 		CacheKey GenerateCacheKey(object id, IType type, string entityOrRoleName);
