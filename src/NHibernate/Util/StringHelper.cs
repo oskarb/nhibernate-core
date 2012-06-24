@@ -703,7 +703,7 @@ namespace NHibernate.Util
 			return str;
 		}
 
-		public static string CollectionToString(ICollection keys)
+		public static string CollectionToString(IEnumerable keys)
 		{
 			StringBuilder sb = new StringBuilder();
 			foreach (object o in keys)
