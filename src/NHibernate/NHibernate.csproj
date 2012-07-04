@@ -221,6 +221,7 @@
     <Compile Include="Exceptions\NoOpViolatedConstraintNameExtracter.cs" />
     <Compile Include="FetchMode.cs" />
     <Compile Include="FlushMode.cs" />
+    <Compile Include="CompatSets\CompatSets.cs" />
     <Compile Include="HibernateException.cs" />
     <Compile Include="Hql\Ast\ANTLR\Tree\ComponentJoin.cs" />
     <Compile Include="Hql\Classic\ClauseParser.cs" />
