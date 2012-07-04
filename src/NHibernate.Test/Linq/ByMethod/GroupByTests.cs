@@ -228,14 +228,14 @@ namespace NHibernate.Test.Linq.ByMethod
 		{
 			var query = (from ol in db.OrderLines
 						 let superior = ol.Order.Employee.Superior
-						 group ol by new {ol.Order.OrderId, SuperiorId = superior.EmployeeId}
-						 into temp
-						 select new
-									{
+						 group ol by new { ol.Order.OrderId, SuperiorId = (int?)superior.EmployeeId }
+							 into temp
+							 select new
+										{
 										OrderId = (int?) temp.Key.OrderId,
 										SuperiorId = (int?) temp.Key.SuperiorId,
-										Count = temp.Count(),
-									}).ToList();
+											Count = temp.Count(),
+										}).ToList();
 
 			Assert.That(query.Count, Is.EqualTo(830));
 		}
