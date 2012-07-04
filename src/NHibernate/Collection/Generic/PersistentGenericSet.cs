@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+#if !NET_4_0
 using Iesi.Collections.Generic;
+#endif
 using NHibernate.Collection.Generic.SetHelpers;
 using NHibernate.DebugHelpers;
 using NHibernate.Engine;
@@ -16,25 +18,14 @@ using NHibernate.Util;
 namespace NHibernate.Collection.Generic
 {
 	/// <summary>
-	/// .NET has no design equivalent for Java's Set so we are going to use the
-	/// Iesi.Collections library. This class is internal to NHibernate and shouldn't
-	/// be used by user code.
+	/// A persistent wrapper for an <see cref="ISet{T}"/>. This will be from
+	/// either Iesi.Collections.Generic, or the BCL, depending on which
+	/// .Net framework version NHibernate was compiled for.
 	/// </summary>
-	/// <remarks>
-	/// The code for the Iesi.Collections library was taken from the article
-	/// <a href="http://www.codeproject.com/csharp/sets.asp">Add Support for "Set" Collections
-	/// to .NET</a> that was written by JasonSmith.
-	/// </remarks>
 	[Serializable]
 	[DebuggerTypeProxy(typeof(CollectionProxy<>))]
 	public class PersistentGenericSet<T> : AbstractPersistentCollection, ISet<T>
 	{
-		// TODO NH: find a way to writeonce (no duplicated code from PersistentSet)
-
-		/* NH considerations:
-		 * The implementation of Set<T> in Iesi collections don't have any particular behavior
-		 * for strongly typed. BTW we use the same technique used for other collection.
-		 */
 		/// <summary>
 		/// The <see cref="ISet{T}"/> that NHibernate is wrapping.
 		/// </summary>
@@ -50,7 +41,7 @@ namespace NHibernate.Collection.Generic
 		/// process.
 		/// </remarks>
 		[NonSerialized]
-		private IList<T> tempList;
+		private IList<T> _tempList;
 
 		// needed for serialization
 		public PersistentGenericSet()
@@ -77,6 +68,10 @@ namespace NHibernate.Collection.Generic
 		public PersistentGenericSet(ISessionImplementor session, ISet<T> original)
 			: base(session)
 		{
+			// Sets can be just a view of a part of another collection.
+			// do we need to copy it to be sure it won't be changing
+			// underneath us?
+			// ie. this.set.addAll(set);
 			set = original;
 			SetInitialized();
 			IsDirectlyAccessible = true;
@@ -173,7 +168,7 @@ namespace NHibernate.Collection.Generic
 			var element = (T)role.ReadElement(rs, owner, descriptor.SuffixedElementAliases, Session);
 			if (element != null)
 			{
-				tempList.Add(element);
+				_tempList.Add(element);
 			}
 			return element;
 		}
@@ -185,7 +180,7 @@ namespace NHibernate.Collection.Generic
 		public override void BeginRead()
 		{
 			base.BeginRead();
-			tempList = new List<T>();
+			_tempList = new List<T>();
 		}
 
 		/// <summary>
@@ -195,11 +190,11 @@ namespace NHibernate.Collection.Generic
 		/// </summary>
 		public override bool EndRead(ICollectionPersister persister)
 		{
-			foreach (T item in tempList)
+			foreach (T item in _tempList)
 			{
 				set.Add(item);
 			}
-			tempList = null;
+			_tempList = null;
 			SetInitialized();
 			return true;
 		}
@@ -296,6 +291,7 @@ namespace NHibernate.Collection.Generic
 
 		#region ISet<T> Members
 
+#if !NET_4_0    // Methods from Iesi.Collections.Generic.ISet<T>, used in .Net 3.5.
 		public ISet<T> Union(ISet<T> a)
 		{
 			Read();
@@ -319,6 +315,7 @@ namespace NHibernate.Collection.Generic
 			Read();
 			return set.ExclusiveOr(a);
 		}
+#endif
 
 		public bool Contains(T item)
 		{
@@ -326,11 +323,13 @@ namespace NHibernate.Collection.Generic
 			return exists == null ? set.Contains(item) : exists.Value;
 		}
 
+#if !NET_4_0    // Methods from Iesi.Collections.Generic.ISet<T>, used in .Net 3.5.
 		public bool ContainsAll(ICollection<T> c)
 		{
 			Read();
 			return set.ContainsAll(c);
 		}
+#endif
 
 		public bool Add(T o)
 		{
@@ -354,6 +353,7 @@ namespace NHibernate.Collection.Generic
 			return true;
 		}
 
+#if !NET_4_0    // Methods from Iesi.Collections.Generic.ISet<T>, used in .Net 3.5.
 		public bool AddAll(ICollection<T> c)
 		{
 			if (c.Count > 0)
@@ -374,6 +374,69 @@ namespace NHibernate.Collection.Generic
 				return false;
 			}
 		}
+#endif
+
+#if NET_4_0
+		public void UnionWith(IEnumerable<T> other)
+		{
+			Read();
+			set.UnionWith(other);
+		}
+
+		public void IntersectWith(IEnumerable<T> other)
+		{
+			Read();
+			set.IntersectWith(other);
+		}
+
+		public void ExceptWith(IEnumerable<T> other)
+		{
+			Read();
+			set.ExceptWith(other);
+		}
+
+		public void SymmetricExceptWith(IEnumerable<T> other)
+		{
+			Read();
+			set.SymmetricExceptWith(other);
+		}
+
+		public bool IsSubsetOf(IEnumerable<T> other)
+		{
+			Read();
+			return set.IsProperSupersetOf(other);
+		}
+
+		public bool IsSupersetOf(IEnumerable<T> other)
+		{
+			Read();
+			return set.IsSupersetOf(other);
+		}
+
+		public bool IsProperSupersetOf(IEnumerable<T> other)
+		{
+			Read();
+			return set.IsProperSupersetOf(other);
+		}
+
+		public bool IsProperSubsetOf(IEnumerable<T> other)
+		{
+			Read();
+			return set.IsProperSubsetOf(other);
+		}
+
+		public bool Overlaps(IEnumerable<T> other)
+		{
+			Read();
+			return set.Overlaps(other);
+		}
+
+		public bool SetEquals(IEnumerable<T> other)
+		{
+			Read();
+			return set.SetEquals(other);
+		}
+#endif
 
 		public bool Remove(T o)
 		{
@@ -397,6 +460,7 @@ namespace NHibernate.Collection.Generic
 			return false;
 		}
 
+#if !NET_4_0    // Methods from Iesi.Collections.Generic.ISet<T>, used in .Net 3.5.
 		public bool RemoveAll(ICollection<T> c)
 		{
 			if (c.Count > 0)
@@ -431,6 +495,7 @@ namespace NHibernate.Collection.Generic
 				return false;
 			}
 		}
+#endif
 
 		public void Clear()
 		{
@@ -470,7 +535,7 @@ namespace NHibernate.Collection.Generic
 			get { return ReadSize() ? CachedSize : set.Count; }
 		}
 
-		bool ICollection<T>.IsReadOnly
+		public bool IsReadOnly
 		{
 			get { return false; }
 		}
@@ -515,11 +580,13 @@ namespace NHibernate.Collection.Generic
 
 		#region ICloneable Members
 
+#if !NET_4_0    // Methods from Iesi.Collections.Generic.ISet<T>, used in .Net 3.5.
 		public object Clone()
 		{
 			Read();
 			return set.Clone();
 		}
+#endif
 
 		#endregion
 
