@@ -130,6 +130,8 @@ namespace NHibernate.Linq.Visitors
 							return VisitNhDistinct((NhDistinctExpression) expression);
 						case NhExpressionType.Star:
 							return VisitNhStar((NhStarExpression) expression);
+						case NhExpressionType.Contains:
+							return VisitNhContains((NhContainsExpression) expression);
 							//case NhExpressionType.New:
 							//    return VisitNhNew((NhNewExpression)expression);
 					}
@@ -188,6 +190,11 @@ namespace NHibernate.Linq.Visitors
 		{
 			var visitor = new HqlGeneratorExpressionTreeVisitor(_parameters);
 			return _hqlTreeBuilder.ExpressionSubTreeHolder(_hqlTreeBuilder.Distinct(), visitor.VisitExpression(expression.Expression));
+		}
+
+		protected HqlTreeNode VisitNhContains(NhContainsExpression expression)
+		{
+			return _hqlTreeBuilder.In(VisitExpression(expression.ItemExpression).AsExpression(), VisitExpression(expression.ElementsExpression));
 		}
 
 		protected HqlTreeNode VisitQuerySourceReferenceExpression(QuerySourceReferenceExpression expression)

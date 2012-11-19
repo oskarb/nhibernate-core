@@ -27,6 +27,8 @@ namespace NHibernate.Linq.Visitors
 					return VisitNhNew((NhNewExpression)expression);
 				case NhExpressionType.Star:
 					return VisitNhStar((NhStarExpression)expression);
+				case NhExpressionType.Contains:
+					return VisitNhContains((NhContainsExpression)expression);
 			}
 
 			return base.VisitExpression(expression);
@@ -107,6 +109,18 @@ namespace NHibernate.Linq.Visitors
 			Expression nx = VisitExpression(expression.Expression);
 
 			return nx != expression.Expression ? new NhAverageExpression(nx) : expression;
+		}
+
+
+		protected virtual Expression VisitNhContains(NhContainsExpression expression)
+		{
+			Expression elementsNx = VisitExpression(expression.ElementsExpression);
+			Expression itemNx = VisitExpression(expression.ItemExpression);
+
+			if (elementsNx != expression.ElementsExpression || itemNx != expression.ItemExpression)
+				return new NhContainsExpression(itemNx, elementsNx);
+
+			return expression;
 		}
 	}
 }

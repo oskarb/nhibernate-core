@@ -25,6 +25,9 @@ namespace NHibernate.Linq.Visitors
 			// Merge aggregating result operators (distinct, count, sum etc) into the select clause
 			MergeAggregatingResultsRewriter.ReWrite(queryModel);
 			
+			// Lift ContainsResultOperator from subqueries to an expression in the where clause.
+			ContainsSubQueryRewriter.ReWrite(queryModel);
+
 			// Swap out non-aggregating group-bys
 			NonAggregatingGroupByRewriter.ReWrite(queryModel);
 

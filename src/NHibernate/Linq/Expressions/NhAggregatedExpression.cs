@@ -4,7 +4,7 @@ namespace NHibernate.Linq.Expressions
 {
 	public class NhAggregatedExpression : Expression
 	{
-		public Expression Expression { get; set; }
+		public Expression Expression { get; set; }  // FIXME: Setter should be private. In NH 4.0.
 
 		public NhAggregatedExpression(Expression expression, NhExpressionType type)
 			: base((ExpressionType)type, expression.Type)
