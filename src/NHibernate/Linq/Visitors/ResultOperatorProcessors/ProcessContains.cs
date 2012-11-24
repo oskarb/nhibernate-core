@@ -1,10 +1,20 @@
 ﻿using System.Collections;
 using System.Linq;
 using NHibernate.Hql.Ast;
+using NHibernate.Linq.ResultOperators;
 using Remotion.Linq.Clauses.ResultOperators;
 
 namespace NHibernate.Linq.Visitors.ResultOperatorProcessors
 {
+	public class ProcessNhContains : ProcessContains, IResultOperatorProcessor<NhContainsResultOperator>
+	{
+		public void Process(NhContainsResultOperator resultOperator, QueryModelVisitor queryModelVisitor, IntermediateHqlTree tree)
+		{
+			Process((ContainsResultOperator)resultOperator, queryModelVisitor, tree);
+		}
+	}
+
+
 	public class ProcessContains : IResultOperatorProcessor<ContainsResultOperator>
 	{
 		public void Process(ContainsResultOperator resultOperator, QueryModelVisitor queryModelVisitor, IntermediateHqlTree tree)

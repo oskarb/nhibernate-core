@@ -89,6 +89,7 @@ namespace NHibernate.Linq.Visitors
 			ResultOperatorMap.Add<GroupResultOperator, ProcessGroupBy>();
 			ResultOperatorMap.Add<SingleResultOperator, ProcessSingle>();
 			ResultOperatorMap.Add<ContainsResultOperator, ProcessContains>();
+			ResultOperatorMap.Add<NhContainsResultOperator, ProcessNhContains>();
 			ResultOperatorMap.Add<NonAggregatingGroupBy, ProcessNonAggregatingGroupBy>();
 			ResultOperatorMap.Add<ClientSideSelect, ProcessClientSideSelect>();
 			ResultOperatorMap.Add<AnyResultOperator, ProcessAny>();

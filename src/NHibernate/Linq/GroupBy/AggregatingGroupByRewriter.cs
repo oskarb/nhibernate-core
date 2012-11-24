@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NHibernate.Linq.Clauses;
+using NHibernate.Linq.ResultOperators;
 using NHibernate.Linq.Visitors;
 using Remotion.Linq;
 using Remotion.Linq.Clauses.Expressions;
@@ -34,7 +35,8 @@ namespace NHibernate.Linq.GroupBy
 				typeof (SkipResultOperator),
 				typeof (TakeResultOperator),
 				typeof (FirstResultOperator),
-				typeof (SingleResultOperator)
+				typeof (SingleResultOperator),
+				typeof (ContainsResultOperator)
 			};
 
 		public static void ReWrite(QueryModel queryModel)
@@ -57,9 +59,18 @@ namespace NHibernate.Linq.GroupBy
 			}
 
 			// Move the result operator up.
-			var groupBy = (GroupResultOperator) subQueryModel.ResultOperators[0];
+			var groupBy = (GroupResultOperator)subQueryModel.ResultOperators[0];
 
 			queryModel.ResultOperators.Insert(0, groupBy);
+
+			// If the GroupResultOperator is now immediately followed by a Contains, the types
+			// will be incompatible. Overrule the type check in ContainsResultOperator.
+			if (queryModel.ResultOperators.Count > 1 && queryModel.ResultOperators[1] is ContainsResultOperator)
+			{
+				var contains = (ContainsResultOperator)queryModel.ResultOperators[1];
+				queryModel.ResultOperators[1] = new NhContainsResultOperator(contains.Item);
+			}
+
 
 			for (int i = 0; i < queryModel.BodyClauses.Count; i++)
 			{
@@ -79,7 +90,7 @@ namespace NHibernate.Linq.GroupBy
 				queryModel.BodyClauses.Add(bodyClause);
 
 			// Replace the outer select clause...
-			queryModel.SelectClause.TransformExpressions(s => 
+			queryModel.SelectClause.TransformExpressions(s =>
 				GroupBySelectClauseRewriter.ReWrite(s, groupBy, subQueryModel));
 
 			// Point all query source references to the outer from clause

@@ -11,6 +11,13 @@ namespace NHibernate.Test.Linq.ByMethod
 	[TestFixture]
 	public class GroupByTests : LinqTestCase
 	{
+		protected override void Configure(Cfg.Configuration configuration)
+		{
+			base.Configure(configuration);
+			configuration.SetProperty(NHibernate.Cfg.Environment.ShowSql, "true");
+		}
+
+
 		[Test]
 		public void SingleKeyGroupAndCount()
 		{
@@ -324,6 +331,22 @@ namespace NHibernate.Test.Linq.ByMethod
 			Assert.That(result.Key, Is.EqualTo(263.5M));
 			Assert.That(result.Count, Is.EqualTo(1));
 		}
+
+
+		[Test]
+		[Description("NH-3155")]
+		public void GroupByInSubquery()
+		{
+			var sq = db.Orders
+					   .GroupBy(x => x.ShippingDate)
+					   .Select(x => x.Max(o => o.OrderId));
+
+			var result = db.Orders
+						   .Where(x => sq.Contains(x.OrderId))
+						   .Select(x => x.OrderId)
+						   .Count();
+		}
+
 
 		private static void CheckGrouping<TKey, TElement>(IEnumerable<IGrouping<TKey, TElement>> groupedItems, Func<TElement, TKey> groupBy)
 		{
