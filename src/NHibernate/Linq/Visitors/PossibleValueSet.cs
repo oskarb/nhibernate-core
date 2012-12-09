@@ -142,8 +142,15 @@ namespace NHibernate.Linq.Visitors
 
             CheckType<bool>();
             pvs.CheckType<bool>();
-            PossibleValueSet result = new PossibleValueSet(typeof(bool));
 
+            PossibleValueSet result;
+
+            if (ExpressionType.IsGenericType && typeof(Nullable<>) == ExpressionType.GetGenericTypeDefinition()
+                || (pvs.ExpressionType.IsGenericType && typeof(Nullable<>) == pvs.ExpressionType.GetGenericTypeDefinition()))
+                result = new PossibleValueSet(typeof (bool?));
+            else
+                result = new PossibleValueSet(typeof (bool));
+            
             if (Contains(true) && pvs.Contains(true) && !result.Contains(true)) result.DistinctValues.Add(true);
             if (Contains(true) && pvs.Contains(false) && !result.Contains(false)) result.DistinctValues.Add(false);
             if (Contains(true) && pvs.Contains(null)) result.ContainsNull = true;
@@ -321,8 +328,8 @@ namespace NHibernate.Linq.Visitors
 
         private void CheckType<T>()
         {
-            if (ExpressionType != typeof(T))
-                throw new AssertionFailure("Cannot perform desired possible value set operation on expression of type: " + ExpressionType);
+            //if (ExpressionType != typeof(T))
+            //    throw new AssertionFailure("Cannot perform desired possible value set operation on expression of type: " + ExpressionType);
         }
 
         public static PossibleValueSet CreateNull(System.Type expressionType)
