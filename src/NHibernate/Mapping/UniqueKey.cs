@@ -16,9 +16,20 @@ namespace NHibernate.Mapping
 		/// </summary>
 		/// <param name="dialect">The <see cref="Dialect.Dialect"/> to use for SQL rules.</param>
 		/// <returns> A string that contains the SQL to create the Unique Key Constraint. </returns>
-		public string SqlConstraintString(Dialect.Dialect dialect)
+		public string SqlConstraintString(Dialect.Dialect dialect, string suffix, bool needsQuote)
 		{
-			StringBuilder buf = new StringBuilder("unique (");
+			StringBuilder buf = new StringBuilder();
+			if (!string.IsNullOrEmpty(Name))
+			{
+				string constraintName = this.Name + suffix;
+				if (needsQuote)
+				{
+					constraintName = dialect.QuoteForTableName(constraintName);
+				}
+				buf.Append("constraint ").Append(constraintName);
+			}
+			buf.Append(" unique (");
+
 			bool commaNeeded = false;
 			bool nullable = false;
 			foreach (Column column in ColumnIterator)
@@ -107,7 +118,7 @@ namespace NHibernate.Mapping
 				return true;
 			foreach (Column column in ColumnIterator)
 			{
-				if(column.IsNullable)
+				if (column.IsNullable)
 					return false;
 			}
 			return true;
