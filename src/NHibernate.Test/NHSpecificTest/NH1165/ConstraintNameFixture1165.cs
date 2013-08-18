@@ -90,7 +90,7 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 			string script = GenerateScript();
 
 			// Primary key is named
-			Assert.IsTrue(script.Contains("constraint PK_Book primary key (Id)"), "Primary Key should have name.");
+			Assert.That(script, Is.StringContaining("constraint PK_Book primary key (Id)"), "Primary Key should have name.");
 		}
 
 
@@ -100,8 +100,8 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 			string script = GenerateScript();
 
 			// Primary key is named
-			Assert.IsTrue(script.Contains("constraint " + Dialect.QuoteForTableName("PK_Thing") + " primary key (Id)"),
-			              "Primary Key should have name.");
+			Assert.That(script, Is.StringContaining("constraint " + Dialect.QuoteForTableName("PK_Thing") + " primary key (Id)"),
+			            "Primary Key should have name.");
 		}
 
 		
@@ -111,7 +111,8 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 			string script = GenerateScript();
 
 			// unique="true" is NOT named
-			Assert.IsTrue(script.Contains("ISBN_10 NVARCHAR(255) not null unique"), "unique should output 'unique' on column.");
+			Assert.That(script, Is.StringContaining("ISBN_10 NVARCHAR(255) not null unique"),
+			            "unique should output 'unique' on column.");
 		}
 
 
@@ -122,10 +123,11 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 			string script = GenerateScript();
 
 			// unique-key="UQ_ISBN_13" is named
-			Assert.IsTrue(script.Contains("ISBN_13 NVARCHAR(255) not null"), "unique-key should output column");
-			Assert.IsFalse(script.Contains("ISBN_13 NVARCHAR(255) not null unique"),
-						   "unique-key should NOT output 'unique' on column");
-			Assert.IsTrue(script.Contains("constraint UQ_ISBN_13 unique (ISBN_13)"), "unique-key should output named constraint");
+			Assert.That(script, Is.StringContaining("ISBN_13 NVARCHAR(255) not null"), "unique-key should output column");
+			Assert.That(script, Is.Not.StringContaining("ISBN_13 NVARCHAR(255) not null unique"),
+			            "unique-key should NOT output 'unique' on column");
+			Assert.That(script, Is.StringContaining("constraint UQ_ISBN_13 unique (ISBN_13)"),
+			            "unique-key should output named constraint");
 		}
 
 
@@ -135,8 +137,8 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 			string script = GenerateScript();
 
 			// compound unique-key is named
-			Assert.IsTrue(script.Contains("constraint UQ_Author_Title unique (Author, Title)"),
-						  "unique-key should output named constraint for compound keys");
+			Assert.That(script, Is.StringContaining("constraint UQ_Author_Title unique (Author, Title)"),
+			            "unique-key should output named constraint for compound keys");
 		}
 
 
