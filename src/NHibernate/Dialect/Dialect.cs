@@ -318,7 +318,9 @@ namespace NHibernate.Dialect
 		}
 
 		/// <summary> 
-		/// The syntax used to add a foreign key constraint to a table.  If SupportsForeignKeyConstraintInAlterTable is false, the returned string will be added to the create table statement instead.  In this case, extra strings, like "add", that apply when using alter table should be omitted.
+		/// The syntax used to add a foreign key constraint to a table.  If SupportsForeignKeyConstraintInAlterTable
+		/// is false, the returned string will be added to the create table statement instead.  In this case, extra
+		/// strings, like "add", that apply when using alter table should be omitted.
 		/// </summary>
 		/// <param name="constraintName">The FK constraint name. </param>
 		/// <param name="foreignKey">The names of the columns comprising the FK </param>

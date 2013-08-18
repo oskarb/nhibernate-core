@@ -907,6 +907,16 @@ namespace NHibernate.Cfg
 			{
 				if (table.IsPhysicalTable && IncludeAction(table.SchemaActions, SchemaAction.Export))
 				{
+					// Is there weirdness here??? By the code's state 2013-08-18, the unique constraints are
+					// included inside the "create table" clause by the Table class, regardless of the
+					// value of SupportsUniqueConstraintInCreateAlterTable. But here we generate ALTER
+					// clauses to add them, if SupportsUniqueConstraintInCreateAlterTable is false. But
+					// the doc for SupportsUniqueConstraintInCreateAlterTable says that if false, there
+					// is no support for adding constraints using either create table or alter table.
+					// It appears this only works currently due to the fact that SupportsUniqueConstraintInCreateAlterTable
+					// is actually true for all dialects, rendering this snippet inactive.
+					//    Bug, or what am I missing? /Oskar 
+					// Note that Hibernate seems to have an entirely different solution nowadays.
 					if (!dialect.SupportsUniqueConstraintInCreateAlterTable)
 					{
 						foreach (var uk in table.UniqueKeyIterator)

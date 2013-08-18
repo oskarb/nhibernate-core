@@ -15,13 +15,15 @@ namespace NHibernate.Mapping
 		/// Generates the SQL string to create the Unique Key Constraint in the database.
 		/// </summary>
 		/// <param name="dialect">The <see cref="Dialect.Dialect"/> to use for SQL rules.</param>
+		/// <param name="nameSuffix">A suffix that should be appended to the specified constraint name.</param>
+		/// <param name="needsQuote">True, if the constraint name must be quoted.</param>
 		/// <returns> A string that contains the SQL to create the Unique Key Constraint. </returns>
-		public string SqlConstraintString(Dialect.Dialect dialect, string suffix, bool needsQuote)
+		public string SqlConstraintString(Dialect.Dialect dialect, string nameSuffix, bool needsQuote)
 		{
 			StringBuilder buf = new StringBuilder();
 			if (!string.IsNullOrEmpty(Name))
 			{
-				string constraintName = this.Name + suffix;
+				string constraintName = this.Name + nameSuffix;
 				if (needsQuote)
 				{
 					constraintName = dialect.QuoteForTableName(constraintName);
