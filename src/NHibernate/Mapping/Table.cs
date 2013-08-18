@@ -421,12 +421,14 @@ namespace NHibernate.Mapping
 
 			foreach (UniqueKey uk in UniqueKeyIterator)
 			{
-				string suffix = "";
-				if (this.Name != uk.Table.Name)
-				{
-					suffix = "_" + this.Name;
-				}
-				buf.Append(',').Append(uk.SqlConstraintString(dialect, suffix, IsQuoted));
+				string constraintNameSuffix = "";
+
+				// If this table "inherits" the constraint from another table, suffix our table
+				// name to the contraint name, to make sure the constraint name is unique.
+				if (this != uk.Table)
+					constraintNameSuffix = "_" + this.Name;
+
+				buf.Append(',').Append(uk.SqlConstraintString(dialect, constraintNameSuffix, IsQuoted));
 			}
 
 			if (dialect.SupportsTableCheck)

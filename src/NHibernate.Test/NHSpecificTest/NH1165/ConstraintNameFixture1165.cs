@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using NHibernate.Cfg;
 using NHibernate.Cfg.MappingSchema;
@@ -39,22 +36,47 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 					rc.Property(x => x.Title, map => map.UniqueKey("UQ_Author_Title"));
 				});
 
+
+			mapper.Class<Thing>(rc =>
+			{
+				rc.Id(x => x.Id, m => m.Generator(Generators.Identity));
+				rc.Table("`Thing`");
+				rc.Property(x => x.Name, map => map.UniqueKey("UQ_THING_NAME"));
+			});
+
+
+			mapper.Class<Animal>(rc =>
+				{
+					rc.Id(x => x.Id, m => m.Generator(Generators.Assigned));
+					rc.Property(x => x.Name, map => map.UniqueKey("UQ_ANIMAL_NAME"));
+				});
+
+			mapper.UnionSubclass<Pig>(rc =>
+				{
+					rc.Table("`Pig`");
+				});
+			mapper.UnionSubclass<Sheep>(rc =>
+				{
+					rc.Schema("foo");
+					rc.Table("Animal");
+				});
+
 			return mapper.CompileMappingForAllExplicitlyAddedEntities();
 		}
 
 		protected override void Configure(Configuration configuration)
 		{
 			base.Configure(configuration);
-			this.configuration = configuration;
+			_configuration = configuration;
 		}
 
-		private Configuration configuration;
+		private Configuration _configuration;
 
 
 		private string GenerateScript()
 		{
-			StringBuilder builder = new StringBuilder();
-			SchemaExport export = new SchemaExport(configuration);
+			var builder = new StringBuilder();
+			var export = new SchemaExport(_configuration);
 			export.Execute(l => builder.AppendLine(l), false, false);
 
 			var script = builder.ToString();
@@ -69,6 +91,17 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 
 			// Primary key is named
 			Assert.IsTrue(script.Contains("constraint PK_Book primary key (Id)"), "Primary Key should have name.");
+		}
+
+
+		[Test]
+		public void ShouldQuotePrimaryKeyConstraintNameInQuotedTable()
+		{
+			string script = GenerateScript();
+
+			// Primary key is named
+			Assert.IsTrue(script.Contains("constraint " + Dialect.QuoteForTableName("PK_Thing") + " primary key (Id)"),
+			              "Primary Key should have name.");
 		}
 
 		
@@ -104,6 +137,29 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 			// compound unique-key is named
 			Assert.IsTrue(script.Contains("constraint UQ_Author_Title unique (Author, Title)"),
 						  "unique-key should output named constraint for compound keys");
+		}
+
+
+		[Test]
+		public void ShouldAppendTableNameToInheritedConstraintNames()
+		{
+			string script = GenerateScript();
+
+			// In the table for the base class, the constraint name is used directly.
+			Assert.That(script, Is.StringContaining("constraint UQ_ANIMAL_NAME unique (Name)"),
+			            "unique-key should output named constraint");
+			
+			// In the table for the Pig subclass, the constraint name should be suffixed with the table name.
+			// Since the subclass is quoted, the constraint name must also be quoted.
+			Assert.That(script,
+			            Is.StringContaining("constraint " + Dialect.QuoteForTableName("UQ_ANIMAL_NAME_Pig") + " unique (Name)"),
+			            "unique-key should output named constraint");
+
+			// The table for the Sheep subclass is in a different schema, and for "inexplicable" reason is named the
+			// same as the table for the base class. The constraint name should be suffixed with the table name, even
+			// though it might not be absolutely required.
+			Assert.That(script, Is.StringContaining("constraint UQ_ANIMAL_NAME_Animal unique (Name)"),
+			            "unique-key should output named constraint");
 		}
 	}
 }
