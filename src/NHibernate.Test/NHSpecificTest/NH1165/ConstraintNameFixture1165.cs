@@ -17,7 +17,7 @@ using NUnit.Framework;
 
 namespace NHibernate.Test.NHSpecificTest.NH1165
 {
-	public class ByCodeFixture : TestCaseMappingByCode
+	public class ConstraintNameFixture1165 : TestCaseMappingByCode
 	{
 		protected override HbmMapping GetMappings()
 		{
@@ -50,30 +50,60 @@ namespace NHibernate.Test.NHSpecificTest.NH1165
 
 		private Configuration configuration;
 
-		[Test]
-		public void SchemaExport_Create_Keys_HaveNames()
+
+		private string GenerateScript()
 		{
 			StringBuilder builder = new StringBuilder();
 			SchemaExport export = new SchemaExport(configuration);
 			export.Execute(l => builder.AppendLine(l), false, false);
 
-			var value = builder.ToString();
+			var script = builder.ToString();
+			return script;
+		}
+
+
+		[Test]
+		public void ShouldNamePrimaryKeyConstraint()
+		{
+			string script = GenerateScript();
 
 			// Primary key is named
-			Assert.IsTrue(value.Contains("constraint PK_Book primary key (Id)"), "Primary Key should have name.");
+			Assert.IsTrue(script.Contains("constraint PK_Book primary key (Id)"), "Primary Key should have name.");
+		}
+
+		
+		[Test]
+		public void ShouldNotNameSimpleUniqueConstraint()
+		{
+			string script = GenerateScript();
 
 			// unique="true" is NOT named
-			Assert.IsTrue(value.Contains("ISBN_10 NVARCHAR(255) not null unique"), "unique should output 'unique' on column.");
+			Assert.IsTrue(script.Contains("ISBN_10 NVARCHAR(255) not null unique"), "unique should output 'unique' on column.");
+		}
+
+
+
+		[Test]
+		public void ShouldNameConstraintForSingleColumnUniqueKey()
+		{
+			string script = GenerateScript();
 
 			// unique-key="UQ_ISBN_13" is named
-			Assert.IsTrue(value.Contains("ISBN_13 NVARCHAR(255) not null"), "unique-key should output column");
-			Assert.IsFalse(value.Contains("ISBN_13 NVARCHAR(255) not null unique"),
-			               "unique-key should NOT output 'unique' on column");
-			Assert.IsTrue(value.Contains("constraint UQ_ISBN_13 unique (ISBN_13)"), "unique-key should output named constraint");
+			Assert.IsTrue(script.Contains("ISBN_13 NVARCHAR(255) not null"), "unique-key should output column");
+			Assert.IsFalse(script.Contains("ISBN_13 NVARCHAR(255) not null unique"),
+						   "unique-key should NOT output 'unique' on column");
+			Assert.IsTrue(script.Contains("constraint UQ_ISBN_13 unique (ISBN_13)"), "unique-key should output named constraint");
+		}
+
+
+		[Test]
+		public void ShouldNameConstraintForMultiColumnUniqueKey()
+		{
+			string script = GenerateScript();
 
 			// compound unique-key is named
-			Assert.IsTrue(value.Contains("constraint UQ_Author_Title unique (Author, Title)"),
-			              "unique-key should output named constraint for compound keys");
+			Assert.IsTrue(script.Contains("constraint UQ_Author_Title unique (Author, Title)"),
+						  "unique-key should output named constraint for compound keys");
 		}
 	}
 }

@@ -751,7 +751,7 @@
     <Compile Include="NHSpecificTest\NH0000\Fixture.cs" />
     <Compile Include="NHSpecificTest\NH0000\FixtureByCode.cs" />
     <Compile Include="NHSpecificTest\NH1165\Book.cs" />
-    <Compile Include="NHSpecificTest\NH1165\PKNameFixture.cs" />
+    <Compile Include="NHSpecificTest\NH1165\ConstraintNameFixture1165.cs" />
     <Compile Include="NHSpecificTest\NH2856\Entities.cs" />
     <Compile Include="NHSpecificTest\NH2856\Fixture.cs" />
     <Compile Include="NHSpecificTest\NH2858\Fixture.cs" />
