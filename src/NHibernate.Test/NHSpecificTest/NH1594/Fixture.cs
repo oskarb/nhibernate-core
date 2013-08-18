@@ -9,7 +9,7 @@ namespace NHibernate.Test.NHSpecificTest.NH1594
     public class Fixture
     {
         [Test]
-        public void Bug()
+        public void ShouldUseCorrectPrecisionAndScaleForDecimalColumn()
         {
             Configuration cfg = new Configuration();
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -17,12 +17,10 @@ namespace NHibernate.Test.NHSpecificTest.NH1594
 
             string[] script = cfg.GenerateSchemaCreationScript(new MsSql2000Dialect());
 
-            bool found = string.Compare(
-                        script[0],
-                        "create table A (id INT IDENTITY NOT NULL, Foo DECIMAL(4, 2) null, primary key (id))",
-                        true) == 0;
-
-            Assert.IsTrue(found, "when using decimal(precision,scale) Script should contain the correct create table statement");
+            Assert.That(script[0],
+                        Is.StringContaining(
+                            "create table A (id INT IDENTITY NOT NULL, Foo DECIMAL(4, 2) null, constraint PK_A primary key (id))").IgnoreCase,
+                        "when using decimal(precision,scale) Script should contain the correct create table statement");
         }
     }
 }

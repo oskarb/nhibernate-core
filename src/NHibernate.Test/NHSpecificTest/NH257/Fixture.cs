@@ -20,18 +20,10 @@ namespace NHibernate.Test.NHSpecificTest.NH257
 
 			bool found = false;
 
-			foreach (string line in script)
-			{
-				if (string.Compare(
-				    	line,
-				    	"create table users_in_groups (group_id INT not null, user_id INT not null, primary key (user_id, group_id))",
-				    	true) == 0)
-				{
-					found = true;
-				}
-			}
-
-			Assert.IsTrue(found, "Script should contain the correct create table statement");
+			Assert.That(script,
+			            Has.Member(
+				            "create table users_in_groups (group_id INT not null, user_id INT not null, constraint PK_users_in_groups primary key (user_id, group_id))")
+			               .IgnoreCase);
 		}
 	}
 }
